@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-23 19:08:24
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-08 10:06:24
+ * @LastEditTime: 2024-07-08 11:29:51
 -->
 <!--  -->
 <template>
@@ -562,8 +562,8 @@ export default {
         pointToRoute(newVal) {
             const result = newVal.map((item) => [item.lng, item.lat, item.alt]);
             this.resultArray = result
-            console.log('resultArray',result);
-            
+            console.log('resultArray', result);
+
             this.drawLines(result);
         },
         /* 计算线信息  绘制航线 */
@@ -934,7 +934,7 @@ export default {
                     });
                     return arr;
                 });
-      
+
             }
         },
         /**化点 */
@@ -1102,7 +1102,7 @@ export default {
 
                 const result = []
                 for (let index = 0; index < 5; index++) {
-                    const p = { ...pointInfo, lat: pointInfo.lat + index * 0.00001, lng: pointInfo.lng + index * 0.00001,id:pointInfo.id +index }
+                    const p = { ...pointInfo, lat: pointInfo.lat + index * 0.00001, lng: pointInfo.lng + index * 0.00001, id: pointInfo.id + index }
                     result.push(Object.assign({}, p))
                 }
 
@@ -1400,15 +1400,22 @@ export default {
 
         /**选择补播路径点*/
         pointchangeChecked(object) {
+
             if (object.checked) {
                 this.choosePointlist.push({ ...object });
             } else {
-                this.choosePointlist.splice(this.choosePointlist.indexOf({ ...object }), 1); // pointlist
-                this.pointlist.forEach((item) => {
-                    if (object.id == item.id) {
-                        this.$set(item, "checked", false);
-                    }
-                });
+                // 从 choosePointlist 对象数组 中删除 object 
+                const index = this.choosePointlist.findIndex(item => item.id === object.id);
+                if (index !== -1) {
+                    this.choosePointlist.splice(index, 1);
+                    this.pointlist.forEach((item) => {
+                        if (object.id == item.id) {
+                            this.$set(item, "checked", false);
+                        }
+                    });
+                }
+                // this.choosePointlist.splice(this.choosePointlist.indexOf({ ...object,checked:true}), 1); 
+
             }
             this.checkAll = this.choosePointlist.length === this.pointlist.length;
             this.isIndeterminate = this.choosePointlist.length > 0 && this.choosePointlist.length < this.pointlist.length;
@@ -1418,12 +1425,15 @@ export default {
             if (object.checked) {
                 this.chooseLinelist.push({ ...object });
             } else {
-                this.chooseLinelist.splice(this.chooseLinelist.indexOf({ ...object }), 1); // pointlist
-                this.lineList.forEach((item) => {
-                    if (object.id == item.id) {
-                        this.$set(item, "checked", false);
-                    }
-                });
+                const index = this.chooseLinelist.findIndex(item => item.id === object.id);
+                if (index !== -1) {
+                    this.chooseLinelist.splice(index, 1);
+                    this.lineList.forEach((item) => {
+                        if (object.id == item.id) {
+                            this.$set(item, "checked", false);
+                        }
+                    });
+                }
             }
             this.checkAll = this.chooseLinelist.length === this.lineList.length;
             this.isIndeterminate = this.chooseLinelist.length > 0 && this.chooseLinelist.length < this.lineList.length;
