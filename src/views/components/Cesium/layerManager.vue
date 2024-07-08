@@ -43,7 +43,7 @@
                         <template v-if="node.level === 2">
                             <span class="action-class">
                                 <i v-show="data.type== 'polygon' && (data.positions != null||'undefind')" class="el-icon-share" title="规划线程" @click="beginCalcroute(data)"></i>
-                                <i v-show="data.type== 'polygon' && (data.positions != null||'undefind')" class="el-icon-s-promotion" title="模拟飞行" @click="beginMoniFly(node,data)"></i>
+                                <!-- <i v-show="data.type== 'polygon' && (data.positions != null||'undefind')" class="el-icon-s-promotion" title="模拟飞行" @click="beginMoniFly(node,data)"></i> -->
                                 <!-- <i v-for="tool in tools" :key="tool.id" class="cesiumDrawFont action-item" :class="[tool.icon]" :title="tool.text" @click="tool.action.call(this, data)"></i> -->
                                 <i v-for="tool in mergedTools" :key="tool.id" class="cesiumDrawFont action-item" :class="[tool.icon]" :title="tool.text" @click="tool.action.call(this, data)"></i>
                             </span>
@@ -405,7 +405,7 @@ export default {
                 const treeDistanceSlider = {
                     id: id + "-slider", //+ "-slider"
                     slidershow: true,
-                    sliderValue: parseFloat(this.sliderValueObj.spacing) || 100,  // 设置 计算后的间距  headingSpacing spacing flyalt
+                    sliderValue: parseFloat(this.sliderValueObj.spacing) || 20,  // 设置 计算后的间距  headingSpacing spacing flyalt
 
                     sliderLable: '间距',
                     sliderTitle: '滑块:设置航线统一标距',
@@ -414,7 +414,7 @@ export default {
                 const treeHeightSlider = {
                     id: id + "-height", //+ "-height"
                     slidershow: true,
-                    sliderValue: parseFloat(this.sliderValueObj.flyalt) || 100,  // 设置计算后的 高度
+                    sliderValue: parseFloat(this.sliderValueObj.flyalt) || 20,  // 设置计算后的 高度
                     sliderLable: '高度',
                     sliderTitle: '',
                 };
@@ -422,7 +422,7 @@ export default {
                 const treeHeadingSpacingSlider = {
                     id: id + "-headingslider", //+ "-headingslider"
                     slidershow: true,
-                    sliderValue: parseFloat(this.sliderValueObj.headingSpacing) || 100,  // 设置 计算后的间距  headingSpacing spacing flyalt
+                    sliderValue: parseFloat(this.sliderValueObj.headingSpacing) || 20,  // 设置 计算后的间距  headingSpacing spacing flyalt
                     sliderLable: '航向',
                     sliderTitle: '滑块:设置航向统一标距',
                 }

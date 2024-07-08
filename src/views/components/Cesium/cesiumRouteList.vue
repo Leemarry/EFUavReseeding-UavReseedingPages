@@ -3,16 +3,17 @@
  * @version: 
  * @Author: Eugene
  * @Date: 2023-12-01 16:44:32
- * @LastEditors: Andy
- * @LastEditTime: 2024-05-09 13:29:41
+ * @LastEditors: likai 2806699104@qq.com
+ * @LastEditTime: 2024-07-08 20:36:10
 -->
 <!-- 航线列表 -->
 <template>
     <div class='routelist-manager-box'>
         <div class="route-manager-header" id="route-manager-header">
             <i class="cesiumDrawFont iconclose1"></i>
-            <span  style="margin-right: 5px;">{{!isItATask ? '航线列表':'航线任务'}}</span>
-            <el-date-picker class="picker date-picker" :clearable="showCloseIcon" v-show="isItATask" @change="ChoiseTimeEvent()" align="center" popper-class="elDatePicker" :unlink-panels="false" value-format="yyyy-MM-dd HH:mm:ss" v-model="choiseTime" type="daterange" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']">
+            <span style="margin-right: 5px;">{{ !isItATask ? '航线列表' : '航线任务' }}</span>
+            <el-date-picker class="picker date-picker" :clearable="showCloseIcon" v-show="isItATask" @change="ChoiseTimeEvent()" align="center" popper-class="elDatePicker" :unlink-panels="false"
+                value-format="yyyy-MM-dd HH:mm:ss" v-model="choiseTime" type="daterange" start-placeholder="开始日期" end-placeholder="结束日期" :default-time="['00:00:00', '23:59:59']">
             </el-date-picker>
             <span class="closebtn cesiumDrawFont iconclose">
                 <i class="iconfont  icon-lishijilu" :title="isItATask ? '=》航线任务' : '航线清单'" @click="switchRoutes()"></i>
@@ -22,29 +23,41 @@
         <div v-show="shouldShowRoutes">
             <div class="sliderContainer">
                 <el-tooltip effect="dark" content="统一速度" placement="top-start">
-                    <span>{{ `速度: ${slidervalue}`}}</span>
-    </el-tooltip>
-                
-                <el-slider
-      v-model="slidervalue"
-      :step="1"
-      :min="4"
-      :max="15"
-      show-stops>
-    </el-slider>
+                    <span>{{ `速度: ${slidervalue}` }}</span>
+                </el-tooltip>
+
+                <el-slider v-model="slidervalue" :step="1" :min="4" :max="15" show-stops>
+                </el-slider>
+            </div>
+            <div class="">
+                <el-row>
+                    <el-col :span="4">
+                        <div class="动作前">动作前</div>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-input placeholder="请输入密码" v-model="startTime" ></el-input>
+                    </el-col>
+                    <el-col :span="4">
+                        <div class="g">动作后</div>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-input placeholder="请输入密码" v-model="endTime" ></el-input>
+                    </el-col>
+                </el-row>
             </div>
 
-            <el-card class="box-card" v-for="(route,key) in routes" :key="key">
+            <el-card class="box-card" v-for="(route, key) in routes" :key="key">
                 <template #header>
                     <div class="card-header">
                         <el-row :gutter="5" style="width:100%">
                             <el-col :span="18">
                                 <el-input v-model="newName" class="inputText" v-if="route.edit" @keyup.enter.native="renameAction(route)"></el-input>
-                                <span @click="openEdit(route)" :title="route.mid" v-else>{{route.text ? route.text: route.mid}}</span>
+                                <span @click="openEdit(route)" :title="route.mid" v-else>{{ route.text ? route.text : route.mid }}</span>
                             </el-col>
                             <el-col :span="6">
                                 <!-- maploading -->
-                                <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机'" @click="maploading ? null : sendupload(route,'drow')"></i>
+                                <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机'" @click=" sendupload(route, 'drow')"></i> 
+                                <!-- maploading ? null : -->
                                 <i class="iconfont  icon-baocun cursorStyle" :class="{ disabled: maploading }" :title="'保存航线'" @click="maploading ? null : sendsave(route)"></i>
                             </el-col>
                         </el-row>
@@ -56,9 +69,11 @@
                 :data-component="itemComponent" :extra-props="{
        itemClick:itemClick,
        current:current}" /> -->
-                <virtual-list class="list" style="height: 200px; overflow-y: auto;" :data-key="'id'" :data-sources="getObjData(route.positions)" :data-component="positionsItem" :estimate-size="50" :extra-props="{
-       itemClick:itemClick,
-       current:current}" />
+                <virtual-list class="list" style="height: 200px; overflow-y: auto;" :data-key="'id'" :data-sources="getObjData(route.positions)" :data-component="positionsItem" :estimate-size="50"
+                    :extra-props="{
+                        itemClick: itemClick,
+                        current: current
+                    }" />
 
                 <!-- <div v-for="(position, index) in route.positions" :key="index" class="position-item">
                     <el-row :gutter="5" style="width:100%">
@@ -78,34 +93,28 @@
         </div>
         <!-- 显示 tasksRoutes 的内容 -->
         <div v-show="shouldShowTasks">
-            <el-card class="box-card" v-for="(route,key) in tasksRoutes" :key="key">
+            <el-card class="box-card" v-for="(route, key) in tasksRoutes" :key="key">
                 <template #header>
                     <div class="card-header">
                         <el-row :gutter="5" style="width:100%">
                             <el-col :span="13" v-if="route.edit">
-                                <!-- <div >
-                                   
-                                <!== <el-button  type="success" icon="el-icon-check" v-if="route.edit"  size="mini"></el-button> ==>
-                                <i class="iconfont  icon-a-zhengquerenkequere cursorStyle"  :class="{ disabled: maploading }" :title="'确认'" ></i>
-                                </div> -->
                                 <el-input v-model="routeName" class="inputText" @keyup.enter.native="renameActionSql(route)"></el-input>
-
                             </el-col>
                             <el-col :span="5" v-if="route.edit">
                                 <i class="iconfont icon-a-zhengquerenkequeren cursorStyle" @click="renameActionSql(route)"></i>
                             </el-col>
                             <el-col :span="18" v-else>
-                                <span @dblclick="openEditSqlRoute(route)" :title="route.mid">{{route.kmzName}}</span>
+                                <span @dblclick="openEditSqlRoute(route)" :title="route.mid">{{ route.kmzName }}</span>
                             </el-col>
                             <el-col :span="6">
                                 <div class="rightfloat">
-                                    <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机'" @click="maploading ? null : sendupload(route,'tasks')"></i>
-                                    <i class="iconfont  icon-hangxianxinxi cursorStyle" :class="{ disabled: maploading }" :title="'解析航线'" @click="maploading ? null : readerkml(route,'read')"></i>
+                                    <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机2'" @click="maploading ? null : sendupload(route, 'tasks')"></i>
+                                    <i class="iconfont  icon-hangxianxinxi cursorStyle" :class="{ disabled: maploading }" :title="'解析航线'" @click="maploading ? null : readerkml(route, 'read')"></i>
                                     <!-- <el-popconfirm title="确定删除吗？">
                                         <i  slot="reference" class="iconfont icon-shanchu- cursorStyle" :title="'删除任务'" @click="maploading ? null : editRouteTask(route,'delet')"></i>
                                     </el-popconfirm> -->
 
-                                    <i  slot="reference" class="iconfont icon-shanchu- cursorStyle" :title="'删除任务'" @click="maploading ? null : editRouteTask(route,'delet')"></i>
+                                    <i slot="reference" class="iconfont icon-shanchu- cursorStyle" :title="'删除任务'" @click="maploading ? null : editRouteTask(route, 'delet')"></i>
 
                                 </div>
 
@@ -114,12 +123,12 @@
                     </div>
                 </template>
                 <div class="container">
-                    <div class="item"> <span>编辑时间：</span><span> {{time(route.kmzUpdateTime)}}</span></div>
-                    <div class="item"><span>文件类型：</span><span> {{(route.kmzType)}}</span></div>
-                    <div class="item"><span>大小：</span><span> {{filtersType(route.kmzSize)}}</span></div>
-                    <div class="item"><span>编辑人：</span><span> {{(route.kmzUpdateUser)}}</span></div>
-                    <div class="item"><span>预计路程：</span><span> {{formattedNum(route.kmzDistance)}}米</span></div>
-                    <div class="item"><span>预计时间：</span><span> {{formatTime(route.kmzDuration)}}</span></div>
+                    <div class="item"> <span>编辑时间：</span><span> {{ time(route.kmzUpdateTime) }}</span></div>
+                    <div class="item"><span>文件类型：</span><span> {{ (route.kmzType) }}</span></div>
+                    <div class="item"><span>大小：</span><span> {{ filtersType(route.kmzSize) }}</span></div>
+                    <div class="item"><span>编辑人：</span><span> {{ (route.kmzUpdateUser) }}</span></div>
+                    <div class="item"><span>预计路程：</span><span> {{ formattedNum(route.kmzDistance) }}米</span></div>
+                    <div class="item"><span>预计时间：</span><span> {{ formatTime(route.kmzDuration) }}</span></div>
                 </div>
             </el-card>
         </div>
@@ -148,7 +157,9 @@ export default {
     data() {
         //这里存放数据
         return {
-            slidervalue:5,
+            startTime:1,
+            endTime: 3,
+            slidervalue: 5,
             showCloseIcon: false,
             choiseTime: [],
             isItATask: false,
@@ -288,22 +299,35 @@ export default {
         },
         /**跨组件发送上传 */
         sendupload(sendRoute, type) {
-            this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
-            this.$emit('send:toggleRouteManager') // //收起下拉
+          
+            
+            // drow // tasks        startTime:1,        endTime: 3,
+            if(type === 'drow'){
+      
+                sendRoute.startTime = this.startTime
+                sendRoute.endTime = this.endTime
+    this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
+            }else{
+    this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
+            }
+  
+            
+        
+            // this.$emit('send:toggleRouteManager') // //收起下拉
         },
         /*编辑删除航线 */
         editRouteTask(route, type) {
 
             this.$confirm('确认删除该航线任务？', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            this.$bus.$emit('send:editRouteTask', route, type)
-            // this.showMessage('message', "success");
-          }).catch(() => {
-            
-          });
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                this.$bus.$emit('send:editRouteTask', route, type)
+                // this.showMessage('message', "success");
+            }).catch(() => {
+
+            });
             // this.$bus.$emit('send:editRouteTask', route, type)
         },
         /**解析航线 */
@@ -312,9 +336,10 @@ export default {
         },
         /**组件发送保存航线 */
         sendsave(saveRoute) {
-            this.$bus.$emit('send:saveRouteToMinio', saveRoute,this.slidervalue)
+            saveRoute.startTime = this.startTime
+            saveRoute.startTime = this.endTime
+            this.$bus.$emit('send:saveRouteToMinio', saveRoute, this.slidervalue)
             // console.log('saveRoute',saveRoute,this.slidervalue);
-            
             this.$emit('send:toggleRouteManager')  //收起下拉
             // this.$bus.$emit('send:ceshiRouteToMinio', saveRoute);  //发送保存至minio
         },
@@ -380,6 +405,7 @@ export default {
 <style lang='scss' scoped>
 //@import url(); 引入公共css类
 @import "../../../styles/default.scss";
+
 .routelist-manager-box {
     width: $draw-panel-width;
     background-color: $bg-color;
@@ -396,10 +422,12 @@ export default {
         height: 200px;
         padding: 10px 15px;
     }
+
     ::v-deep .el-card__header {
         font-size: 14px;
         padding: 2px 15px;
     }
+
     &::-webkit-scrollbar {
         display: none;
     }
@@ -430,28 +458,35 @@ export default {
     span {
         color: $color;
     }
+
     .date-picker {
         position: absolute;
         cursor: pointer;
     }
 }
+
 .position-item {
     margin: 5px;
 }
+
 .icon-tijiao,
 .icon-shanchu-,
 .icon-baocun {
     font-size: 36px;
 }
+
 .icon-tijiao {
     margin-right: 10px;
 }
+
 .rightfloat {
     display: flex;
     align-items: center;
+
     .icon-hangxianxinxi {
         font-size: 21px;
     }
+
     .icon-shanchu- {
         font-size: 26px;
     }
@@ -462,20 +497,23 @@ export default {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(4, 1fr);
-    gap: 10px; /* 如果需要设置间距可以调整这个值 */
+    gap: 10px;
+    /* 如果需要设置间距可以调整这个值 */
 }
 
 .item {
     background-color: lightblue;
     padding: 10px;
 }
-::v-deep .task-div {
-}
+
+::v-deep .task-div {}
+
 /**时间选择器样式突兀修改 */
 ::v-deep .el-range-editor {
     .el-range__icon {
         margin-bottom: 10px;
     }
+
     .el-range-separator {
         line-height: 22px;
     }
@@ -486,6 +524,7 @@ export default {
     border-bottom: 1px solid #444444;
     border-radius: 0;
 }
+
 // 时间选择器
 ::v-deep .inputText .el-input__inner {
     width: 100%;
@@ -494,21 +533,26 @@ export default {
 ::v-deep .el-range-editor.el-input__inner {
     width: 230px;
     padding: 3px;
+
     .el-range__close-icon {
         display: none;
     }
 }
-.sliderContainer{
+
+.sliderContainer {
     display: flex;
     align-items: center;
     margin: 0px 5px;
-    & > :first-child{
-        margin: 0px 15px 0px 10px ;
+
+    &> :first-child {
+        margin: 0px 15px 0px 10px;
     }
-    & > :not(:first-child){
+
+    &> :not(:first-child) {
         flex-grow: 1;
     }
 }
+
 .loadingStyle {
     display: flex;
     align-items: center;
@@ -518,6 +562,7 @@ export default {
     align-content: center;
     justify-content: center;
     font-size: 20px;
+
     .loading {
         width: 115px;
         height: 115px;
@@ -555,6 +600,7 @@ export default {
         letter-spacing: 2px;
         position: relative;
     }
+
     .loading-text::after {
         content: "加载中..";
         position: absolute;
@@ -572,6 +618,7 @@ export default {
         0% {
             height: 100%;
         }
+
         100% {
             height: 0%;
         }
@@ -591,6 +638,7 @@ export default {
         0% {
             transform: rotate(0deg);
         }
+
         100% {
             transform: rotate(-360deg);
         }
@@ -599,13 +647,17 @@ export default {
 
 .cursorStyle {
     cursor: pointer;
+
     &:hover {
         color: aquamarine;
     }
 }
+
 .disabled {
-    opacity: 0.5; /* 或者其他禁用状态下的样式 */
+    opacity: 0.5;
+    /* 或者其他禁用状态下的样式 */
     cursor: not-allowed !important;
-    pointer-events: none; /* 禁止鼠标事件 */
+    pointer-events: none;
+    /* 禁止鼠标事件 */
 }
-</style> 
+</style>

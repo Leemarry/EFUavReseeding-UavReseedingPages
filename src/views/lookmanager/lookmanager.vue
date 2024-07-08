@@ -3,8 +3,8 @@
  * @version: 
  * @Author: Eugene
  * @Date: 2023-12-05 14:13:39
- * @LastEditors: likai
- * @LastEditTime: 2024-05-22 10:01:02
+ * @LastEditors: likai 2806699104@qq.com
+ * @LastEditTime: 2024-07-08 18:19:59
 -->
 <!-- 识别 tester   10010 -->
 <template>
@@ -225,7 +225,7 @@ export default {
             deep: true,
             immediate: true,
             handler(val, oldval) {
-                // console.log('分析结果图集');
+                console.log('分析结果图集');
                 const uavId = this.defaultUavSn
                 this.defaultUavResultImageData = this.setUavImageData(uavId, this.resultimageHeartbeatList);
             }

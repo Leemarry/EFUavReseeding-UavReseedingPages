@@ -1887,14 +1887,13 @@ export default {
       if (type === 'tasks') {
         this.uploadTaskToUav(route, this.defaultUavSn)
       } else if (type === 'drow') {
-
-        const { mid, positions, unifiedHeight, text } = route
-
-        console.log('drow', route);
+        const { mid, positions, unifiedHeight, text , startTime ,endTime } = route
         this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: positions, unifiedHeight }); // 存储store
         // this.ClearRouteData()
+        console.log('route',route);
         this.uploadMission(route, this.defaultUavSn)
 
+        
       }
     },
 
@@ -1908,6 +1907,8 @@ export default {
           altType: 0,
           takeoffAlt: route.unifiedHeight, //unifiedHeight
           homeAlt: 30, // 如果不需要传递homeAlt，可以设置为null
+          startTime:route.startTime,
+          endTime:route.endTime
         };
         const data = {
           'mission': route.positions,
@@ -2015,7 +2016,10 @@ export default {
         takeoffAlt: route.unifiedHeight, //unifiedHeight
         homeAlt: 30, // 如果不需要传递homeAlt，可以设置为null
         name: name,
-        speed: speed
+        speed: speed,
+        starTime : route.startTime,
+        endTime : route.endTime
+
       };
       const data = {
         'mission': route.positions,

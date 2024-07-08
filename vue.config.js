@@ -49,23 +49,23 @@ module.exports = {
       // http://8.134.196.47:9000/efuav/photo/uav/1ZNBJ5F00C008L/image/20240116/dji16252953_20240116154426.JPG
 
       //重写代理
-      '/resourceminio': {
-        target: 'http://8.148.10.90:9000',
-        changeOrigin: true,
-        // logLevel: 'debug',
-        pathRewrite: {
-          '^/resourceminio': '/efuav',
-        },
-      },
-
-      //   '/resourceminio': {
-      //     target: process.env.HOST_URL,
-      //     changeOrigin: true,
-      //     logLevel: 'debug',
-      //     pathRewrite: {
-      //         '^/resourceminio': '/efapi/reseeding/resourceminio'
-      //     }
+      // '/resourceminio': {
+      //   target: 'http://8.148.10.90:9000',
+      //   changeOrigin: true,
+      //   // logLevel: 'debug',
+      //   pathRewrite: {
+      //     '^/resourceminio': '/efuav',
+      //   },
       // },
+
+        '/resourceminio': {
+          target: process.env.HOST_URL,
+          changeOrigin: true,
+          logLevel: 'debug',
+          pathRewrite: {
+              '^/resourceminio': '/efapi/reseeding/resourceminio'
+          }
+      },
       /**代理查询天气 */
       '/queryWeather': {
         target: 'https://api.seniverse.com',

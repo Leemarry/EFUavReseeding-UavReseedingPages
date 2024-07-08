@@ -458,35 +458,18 @@ opacity: 0;
   margin: 12% auto;
   overflow: auto;
   border-radius: 5px;
+  min-height: 200px;
 }
-
-
-
 // #endregion
 
 
 
-// #endregion
-
-// ::v-deep .hearder-section{
-
-//     padding: 5px 0 0 5px;
-
-//     .el-row{
-//       .el-col{
-//         min-width: 3000px;
-//       }
-//     }
-//     .el-card__header{
-//       padding: 5px 8px;
-//       .card-header{
-//         flex-wrap: wrap;
-//       }
 
 
-// }
-// }
 
-// @mixin cardStyle() {
+
+
+// #region 弹窗样式
+.al-dialog{
   
-// }
+}

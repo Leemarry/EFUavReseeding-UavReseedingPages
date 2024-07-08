@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-23 19:08:24
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-08 11:29:51
+ * @LastEditTime: 2024-07-08 14:08:52
 -->
 <!--  -->
 <template>
@@ -274,7 +274,7 @@
                         <div class="hascheckedPoint">
                             <div class="settingBnt">
                                 <el-button @click="saveRouteToStore(true)">保存航线</el-button>
-                                <el-button @click="openTaskDialog">上传</el-button>
+                                <el-button @click="openTaskDialog">{{ `上传${currentType ? '航点' : '航线'}` }}</el-button>
                                 <el-button @click="downloadRouteTask" v-if="1 == 2">下载</el-button>
                                 <el-button @click="isVisableSetunifiedHeight = !isVisableSetunifiedHeight">设置统一高度</el-button>
                                 <el-button @click="seedmsg">SSE</el-button>
@@ -401,6 +401,34 @@
                 </div>
             </div>
         </div>
+        <!-- 航线弹窗 -->
+        <div id="lineDialog" class="dialog">
+            <div class='content' :style="{width:'30%'}">
+                <div id="header">
+                    <span>航线</span>
+                </div>
+                <div class='main'>
+                    <el-row :gutter="20">
+                        <el-col :span="12">
+                            <div class=""><el-input placeholder="请输入内容"></el-input></div>
+                        </el-col>
+                        <el-col :span="12">
+                            <div class=""></div>
+                        </el-col>
+                        <el-col :span="12">
+                            <div class=""></div>
+                        </el-col>
+                        <el-col :span="12">
+                            <div class=""></div>
+                        </el-col>
+                    </el-row>
+                </div>
+                <div id="footer">
+                </div>
+            </div>
+        </div>
+
+
         <!-- 上传补播路径任务弹窗 -->
         <missionTaskDialog ref="missionTaskDialog" @submit:missionTask=uploadRouteTask></missionTaskDialog>
         <processDialog ref="processDialog" :defaultUavSn="defaultUavSn"></processDialog>
@@ -914,29 +942,32 @@ export default {
         /**页面新增按钮--上传 */
         //#region ---------------------------------------------------------------上传补播路径任务弹窗---------------------------------------------------------------------------
         /**打开弹窗 */
-        // const result2 = this.chooseLinelist.flatMap((item) => [
-        //         [item.onlng, item.onlat, item.onalt], // 起点  
-        //         [item.offlng, item.offlat, item.offalt] // 终点  
-        //     ]);
-        //     console.log('result', result2);
-        //         console.log('chooseLinelist',this.resultArray,result);
         openTaskDialog() {
             // let missionTaskDialog = this.$refs.missionTaskDialog
             // if (missionTaskDialog) missionTaskDialog.outerVisible = true; 
             if (this.currentType) {
-                this.uploadRouteTask()
+                this.uploadRouteTask(this.choosePointlist)
             } else {
                 // 当前线 分段 [[item.onlng, item.onlat, item.onalt],[item.onlng, item.onlat, item.onalt]]
                 const result = this.chooseLinelist.flatMap((item) => {
-                    const arr = this.calculateEquinox(item.onlng, item.onlat, item.offlng, item.offlat, 0.2)
+                    const arr = this.calculateEquinox(item.onlng, item.onlat, item.offlng, item.offlat, 2.5)
                     arr.forEach(element => {
                         element[2] = item.onalt
                     });
                     return arr;
                 });
+                console.log('result', result);
+
+                this.openLineDialog()
 
             }
         },
+        openLineDialog() {
+            const lineDialog = document.getElementById('lineDialog');
+            lineDialog.style.display = 'block';
+        },
+        //#endregion
+        // #region ---------------------------------------------------------------  监听 -------------------------------------------------------
         /**化点 */
         calculateEquinox(onlng, onlat, offlng, offlat, spacing = 2) {
             console.log(onlng, onlat, offlng, offlat, spacing);
@@ -1034,28 +1065,10 @@ export default {
             // const dataStr = JSON.stringify(newdata)
             xhr.send()
         },
-
-        async submit() {
-            let url = 'uavs/finalHandle';
-            try {
-                const handleUuid = "ssss"
-                const params = { uavId: this.defaultUavSn, handleUuid }
-                const payload = { that: this, url, params, data: { op: "ss" } }
-                const response = await this.$store.dispatch('uavs/finalHandle', payload);
-                const { code, data, message } = response;
-                if (code == 1) {
-
-
-                } else {
-                    this.showMessage("error", 'warning')
-                }
-            } catch (error) {
-                this.showMessage(error, 'error')
-            }
-
-        },
         /**上传至开源无人机  */
-        async uploadRouteTask() {
+        async uploadRouteTask(points) {
+            if (!points || points.length <= 0) { return false; }
+
             let url = 'uvas/uploadRouteTask';
             try {
                 this.loadingText = '正在上传中'
@@ -1064,51 +1077,7 @@ export default {
 
                 const params = { uavId: this.defaultUavSn }
 
-                const payload = { params, that: this, url, data: this.choosePointlist }
-                const response = await this.$store.dispatch('uavs/uploadRouteTask', payload);
-                const { data, message, code } = response;
-                if (code === 1) {
-                    this.showMessage(message, "success");
-                    this.saveRouteData()
-                } else {
-                    this.showMessage(message, "warning");
-                }
-            } catch (error) {
-                this.showMessage(error, "error");
-            } finally {
-                this.loadingText = '拼命加载中'
-                this.fullloading = false;
-            }
-        },
-        async uploadRouteTask2() {
-            let url = 'uvas/uploadRouteTask';
-            try {
-                this.loadingText = '正在上传中'
-                this.fullloading = true;
-                const uavId = this.defaultUavSn;
-
-                const params = { uavId: this.defaultUavSn }
-                const pointInfo = {
-                    "lat": 30.46021, //114.46872,30.46021
-                    "lng": 114.46872,
-                    "alt": 5,
-                    "seedNum": 20,
-                    "flyTimes": 0,
-                    "id": 107,
-                    "handleId": 39,
-                    "checked": true
-                }
-                console.log('choosePointlist', this.choosePointlist);
-
-                const result = []
-                for (let index = 0; index < 5; index++) {
-                    const p = { ...pointInfo, lat: pointInfo.lat + index * 0.00001, lng: pointInfo.lng + index * 0.00001, id: pointInfo.id + index }
-                    result.push(Object.assign({}, p))
-                }
-
-
-
-                const payload = { params, that: this, url, data: result }
+                const payload = { params, that: this, url, data: points }
                 const response = await this.$store.dispatch('uavs/uploadRouteTask', payload);
                 const { data, message, code } = response;
                 if (code === 1) {
@@ -1149,9 +1118,6 @@ export default {
                 this.loadingText = '拼命加载中'
             }
         },
-
-
-
         /**上传航线值无人机---没有用 */
         async uploadMission(route) {
             try {
@@ -1183,9 +1149,7 @@ export default {
             }
         },
 
-
-
-        //#endregion
+        //#endregion 
 
         //#region -----------------------------------------------------------------处理弹窗----------------------------------------------------------------------
 
