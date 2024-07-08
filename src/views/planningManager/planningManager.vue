@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-23 19:08:24
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-05 13:59:16
+ * @LastEditTime: 2024-07-08 10:06:24
 -->
 <!--  -->
 <template>
@@ -513,18 +513,16 @@ export default {
             'defaultUavHeartbeat',
             'currentWorkPoint',
         ]),
-        chooseLinelist1() {
-            return JSON.parse(JSON.stringify(this.chooseLinelist));
-        }
+        // chooseLinelist1() {
+        //     return JSON.parse(JSON.stringify(this.chooseLinelist));
+        // }
     },
     //监控data中的数据变化
     watch: {
         choosePointlist(newVal, oldVal) {
-            console.log(this.choosePointlist, 'choosePointlist');
-
             this.pointToRoute(newVal)
         },
-        chooseLinelist1: {
+        chooseLinelist: {
             handler(newVal, oldVal) {
                 this.lineToRoute(newVal)
             },
@@ -564,6 +562,8 @@ export default {
         pointToRoute(newVal) {
             const result = newVal.map((item) => [item.lng, item.lat, item.alt]);
             this.resultArray = result
+            console.log('resultArray',result);
+            
             this.drawLines(result);
         },
         /* 计算线信息  绘制航线 */
@@ -573,7 +573,6 @@ export default {
                 [item.onlng, item.onlat, item.onalt], // 起点  
                 [item.offlng, item.offlat, item.offalt] // 终点  
             ]);
-            console.log('result', result);
 
             this.resultArray = result
             this.drawLines(result);

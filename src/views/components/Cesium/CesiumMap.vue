@@ -2,11 +2,12 @@
 <template>
     <div class="cesiumOutdiv">
         <!-- icon-shikou -->
-        <i :class="['iconfont' ,isLockView ? 'icon-gudingshikou': 'icon-shikou' ]" :title="isLockView ? '已锁定': '设置锁定'" @click="setViewport"></i>
+        <i :class="['iconfont', isLockView ? 'icon-gudingshikou' : 'icon-shikou']" :title="isLockView ? '已锁定' : '设置锁定'" @click="setViewport"></i>
         <div id="cesiumContainer"></div>
 
         <!-- 绘画 -->
-        <CesiumDraw v-bind="$attrs" v-on="$listeners" :CursorTipDistance="CursorTipDistance" @sendclearLinesAndstore="clearLinesAndStore" @senddoFlyCommands="senddoFlyCommandsEvent" @editEvent="CesiumEditEvent" :viewer="viewer" v-if="viewer" v-show="visible"></CesiumDraw>
+        <CesiumDraw v-bind="$attrs" v-on="$listeners" :CursorTipDistance="CursorTipDistance" @sendclearLinesAndstore="clearLinesAndStore" @senddoFlyCommands="senddoFlyCommandsEvent"
+            @editEvent="CesiumEditEvent" :viewer="viewer" v-if="viewer" v-show="visible"></CesiumDraw>
     </div>
 </template>
 
@@ -269,6 +270,14 @@ export default {
             //         1000
             //     ),
             // });
+            // // 是否支持图像渲染像素化处理
+            // if (Cesium.FeatureDetection.supportsImageRenderingPixelated()) {
+            //     window.viewer.resolutionScale = window.devicePixelRatio
+            // }
+
+            // // 开启抗锯齿
+            // window.viewer.scene.postProcessStages.fxaa.enabled = true;
+
             this.viewer = window.viewer;
 
             // this.reloadLoadProgress(); //加载进度
@@ -616,7 +625,9 @@ export default {
          * @return {*}
          */
         async drawLines(PositionsList = this.geoCoordinates) {
-            // console.log('计算航线信息calculateRoute', PositionsList);
+            const startColor = new Cesium.Color.fromCssColorString('#009DFF') // #9EE8E7
+            const endColor = new Cesium.Color.fromCssColorString('#9EE8E7')
+            const color = Cesium.Color.BLUE
             let viewer = window.viewer;
             if (PositionsList.length > 0) {
                 // 设置默认相机视角
@@ -637,6 +648,7 @@ export default {
             // 添加航点
             window.viewer.scene.globe.depthTestAgainstTerrain = false;
             for (let i = 0; i < PositionsList.length; i++) {
+                const currentCorlor = i == 0 ? startColor : Cesium.Color.YELLOW;
                 var Position = PositionsList[i];
                 var longitude = Position[0];
                 var latitude = Position[1];
@@ -648,7 +660,6 @@ export default {
                 );
                 // console.log('高度高度',updatedPositions,Position,position);
                 height = updatedPositions[0].height + 10;
-
                 var altitude = height; // 指定航点的高度
                 var newPosition = Cesium.Cartesian3.fromDegrees(
                     longitude,
@@ -666,7 +677,7 @@ export default {
                     },
                     id: "storePoint" + i,
                     point: {
-                        color: Cesium.Color.YELLOW,
+                        color: currentCorlor, 
                         pixelSize: 10
                     }
                 });
@@ -681,7 +692,8 @@ export default {
                 polyline: {
                     positions: waypoints,
                     width: 3,
-                    material: Cesium.Color.RED
+                    material: Cesium.Color.RED,
+                    granularity: 0.03
                 }
             });
 
@@ -1406,10 +1418,12 @@ export default {
     height: 100% !important;
     position: relative;
 }
+
 #cesiumContainer {
     width: 100%;
     height: 100%;
 }
+
 .icon-gudingshikou,
 .icon-shikou {
     position: absolute;
