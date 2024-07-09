@@ -389,48 +389,50 @@ const mutations = {
         }
         break;
       case 10021: // 10021 分析图片 所有无人机分析图片包
-        console.log('10021 图片 所有无人机图片包', data);
-        if (state.resultimageHeartbeatList && state.resultimageHeartbeatList.length > 0) {
-          for (let i = 0; i < state.resultimageHeartbeatList.length; i++) {
-            const element = state.resultimageHeartbeatList[i]; // 0
-            if (element && element.uavId) {
-              if (element.uavId === deviceID) {
-                index = i;
-                break;
-              }
+     setTimeout(() => {
+      console.log('10021 图片 所有无人机图片包', data);
+      if (state.resultimageHeartbeatList && state.resultimageHeartbeatList.length > 0) {
+        for (let i = 0; i < state.resultimageHeartbeatList.length; i++) {
+          const element = state.resultimageHeartbeatList[i]; // 0
+          if (element && element.uavId) {
+            if (element.uavId === deviceID) {
+              index = i;
+              break;
             }
           }
-          if (index >= 0) {
-            // console.log('当前图片数', state.resultimageHeartbeatList[index].array.length, state.resultimageHeartbeatList[index].array);
-            state.resultimageHeartbeatList[index].array.unshift(data);
-            // state.resultimageHeartbeatList[index].imgarray.unshift(data.url);
-            const Imgarray = state.resultimageHeartbeatList[index].imgarray;
-            Imgarray.unshift(data.url)
-            const uniqueImgarray = new Set(Imgarray);
-            state.resultimageHeartbeatList[index].imgarray = Array.from(uniqueImgarray);
-            state.resultimageHeartbeatList[index].url = data.url; // 当前分析结果图片
-          } else {
-            state.resultimageHeartbeatList.push({ uavId: deviceID, imgarray: [data.url], array: [data], url: data.url });
-            index = state.resultimageHeartbeatList.length - 1;
-          }
+        }
+        if (index >= 0) {
+          // console.log('当前图片数', state.resultimageHeartbeatList[index].array.length, state.resultimageHeartbeatList[index].array);
+          state.resultimageHeartbeatList[index].array.unshift(data);
+          // state.resultimageHeartbeatList[index].imgarray.unshift(data.url);
+          const Imgarray = state.resultimageHeartbeatList[index].imgarray;
+          Imgarray.unshift(data.url)
+          const uniqueImgarray = new Set(Imgarray);
+          state.resultimageHeartbeatList[index].imgarray = Array.from(uniqueImgarray);
+          state.resultimageHeartbeatList[index].url = data.url; // 当前分析结果图片
         } else {
-          // 第一个 构造对象数组
           state.resultimageHeartbeatList.push({ uavId: deviceID, imgarray: [data.url], array: [data], url: data.url });
-          index = 0;
+          index = state.resultimageHeartbeatList.length - 1;
         }
-        if (isNowUav) {
-          // 当前 分析结果的图片list
+      } else {
+        // 第一个 构造对象数组
+        state.resultimageHeartbeatList.push({ uavId: deviceID, imgarray: [data.url], array: [data], url: data.url });
+        index = 0;
+      }
+      if (isNowUav) {
+        // 当前 分析结果的图片list
 
-          state.defaultUavResultImageData = state.resultimageHeartbeatList[index]
-        } else {
-          state.defaultUavResultImageData = {
-            url: '',
-            uavId: null,
-            array: [],
-            imgarray: [],
-          };
-          // state.defaultUavImageList.splice(0, state.defaultUavImageList.length);
-        }
+        state.defaultUavResultImageData = state.resultimageHeartbeatList[index]
+      } else {
+        state.defaultUavResultImageData = {
+          url: '',
+          uavId: null,
+          array: [],
+          imgarray: [],
+        };
+        // state.defaultUavImageList.splice(0, state.defaultUavImageList.length);
+      }
+     }, 300);
         break;
       case 2250: // 大疆服务后台心跳包
         break;
