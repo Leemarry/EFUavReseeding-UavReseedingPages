@@ -2017,7 +2017,7 @@ export default {
         homeAlt: 30, // 如果不需要传递homeAlt，可以设置为null
         name: name,
         speed: speed,
-        starTime : route.startTime,
+        startTime : route.startTime,
         endTime : route.endTime
 
       };

@@ -35,13 +35,13 @@
                         <div class="动作前">动作前</div>
                     </el-col>
                     <el-col :span="8">
-                        <el-input placeholder="请输入密码" v-model="startTime" ></el-input>
+                        <el-input placeholder="请输入" v-model="startTime" ></el-input>
                     </el-col>
                     <el-col :span="4">
                         <div class="g">动作后</div>
                     </el-col>
                     <el-col :span="8">
-                        <el-input placeholder="请输入密码" v-model="endTime" ></el-input>
+                        <el-input placeholder="请输入" v-model="endTime" ></el-input>
                     </el-col>
                 </el-row>
             </div>
@@ -299,14 +299,13 @@ export default {
         },
         /**跨组件发送上传 */
         sendupload(sendRoute, type) {
-          
-            
+
             // drow // tasks        startTime:1,        endTime: 3,
             if(type === 'drow'){
-      
-                sendRoute.startTime = this.startTime
-                sendRoute.endTime = this.endTime
-    this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
+                sendRoute.startTime = this.startTime//  Number(this.startTime)
+                sendRoute.endTime = this.endTime// Number(this.endTime )
+                console.log(sendRoute,'sendRoute',type);
+     this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
             }else{
     this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
             }
@@ -337,7 +336,8 @@ export default {
         /**组件发送保存航线 */
         sendsave(saveRoute) {
             saveRoute.startTime = this.startTime
-            saveRoute.startTime = this.endTime
+            saveRoute.endTime = this.endTime
+            console.log('组件发送保存航线',saveRoute);
             this.$bus.$emit('send:saveRouteToMinio', saveRoute, this.slidervalue)
             // console.log('saveRoute',saveRoute,this.slidervalue);
             this.$emit('send:toggleRouteManager')  //收起下拉
