@@ -61,7 +61,7 @@
                                     </el-col>
                                     <el-col :span="14">
                                         <div>
-                                            <label>旁向重叠率[米]</label>
+                                            <label>旁向重叠率[%]</label>
                                         </div>
 
                                     </el-col>
