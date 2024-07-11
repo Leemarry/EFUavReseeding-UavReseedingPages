@@ -1872,11 +1872,6 @@ export default {
       this.maploading = true
       this.loadingText = '请求执行中'
     },
-
-    /**移除保存的航线 */
-    ClearRouteData() {
-      this.$store.dispatch("routeData/setRouteData", { mid: null, geoCoordinates: [], unifiedHeight: null })
-    },
     /**执行上传航线 */
     sendrouteInfo(route, type) {
       /**清除以前执行保存vuex */
@@ -1889,11 +1884,7 @@ export default {
       } else if (type === 'drow') {
         const { mid, positions, unifiedHeight, text , startTime ,endTime } = route
         this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: positions, unifiedHeight }); // 存储store
-        // this.ClearRouteData()
-        console.log('route',route);
         this.uploadMission(route, this.defaultUavSn)
-
-        
       }
     },
 

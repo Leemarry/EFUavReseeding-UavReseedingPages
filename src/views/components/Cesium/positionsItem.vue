@@ -3,8 +3,8 @@
  * @version: 
  * @Author: Eugene
  * @Date: 2024-04-18 16:27:18
- * @LastEditors: Andy
- * @LastEditTime: 2024-04-18 16:48:39
+ * @LastEditors: likai 2806699104@qq.com
+ * @LastEditTime: 2024-07-11 13:45:51
 -->
 <!--  -->
 <template>
@@ -20,8 +20,6 @@
                             <span>{{source.lat}}</span>
                         </el-col>
                     </el-row>
-                    <!--  {{ source.id }} - {{ source.text }} -->
-      <!-- <div class="id"  @mouseover="itemClick(index)">{{ index }}</div> -->
     </div>
 </template>
 
@@ -53,7 +51,6 @@ props: {
         }
       },
     // 每一行的内容,基础props，不用传递
-
     current: String,
     itemClick: Function
   },

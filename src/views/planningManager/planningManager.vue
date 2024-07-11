@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-23 19:08:24
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-08 14:08:52
+ * @LastEditTime: 2024-07-11 15:28:19
 -->
 <!--  -->
 <template>
@@ -200,7 +200,7 @@
                                         <template #header>
                                             <div class='flexDiv card-header'>
                                                 <div class='card-header-text'>类型：</div>
-                                                <el-radio-group v-model="currentType" @change="switchType">
+                                                <el-radio-group v-model="currentType" @change="switchReseedingType">
                                                     <el-radio :label="1">单点</el-radio>
                                                     <el-radio :label="0">连续补播</el-radio>
                                                 </el-radio-group>
@@ -212,7 +212,7 @@
                                                 <el-radio :label="1">已播</el-radio>
                                                 <el-radio :label="2">全部</el-radio>
                                             </el-radio-group>
-                                            <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="selectAllPoint">{{ `全选` }}</el-checkbox>
+                                            <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="switchReseedingType( !currentType ,checkAll)">{{ `全选` }}</el-checkbox>
                                         </div>
                                     </el-card>
                                     <div v-if='currentType'>
@@ -403,7 +403,7 @@
         </div>
         <!-- 航线弹窗 -->
         <div id="lineDialog" class="dialog">
-            <div class='content' :style="{width:'30%'}">
+            <div class='content' :style="{ width: '30%' }">
                 <div id="header">
                     <span>航线</span>
                 </div>
@@ -427,8 +427,6 @@
                 </div>
             </div>
         </div>
-
-
         <!-- 上传补播路径任务弹窗 -->
         <missionTaskDialog ref="missionTaskDialog" @submit:missionTask=uploadRouteTask></missionTaskDialog>
         <processDialog ref="processDialog" :defaultUavSn="defaultUavSn"></processDialog>
@@ -541,9 +539,6 @@ export default {
             'defaultUavHeartbeat',
             'currentWorkPoint',
         ]),
-        // chooseLinelist1() {
-        //     return JSON.parse(JSON.stringify(this.chooseLinelist));
-        // }
     },
     //监控data中的数据变化
     watch: {
@@ -589,9 +584,13 @@ export default {
         /**计算点信息  绘制航线 */
         pointToRoute(newVal) {
             const result = newVal.map((item) => [item.lng, item.lat, item.alt]);
+            const setMap =new  Map();
+            for (let index = 0; index < newVal.length; index++) {
+                const element = newVal[index];
+                setMap.set('single'+element.id,[element.lng,element.lat,element.alt])
+            }
             this.resultArray = result
-            console.log('resultArray', result);
-
+            console.log('resultArray',setMap, result);
             this.drawLines(result);
         },
         /* 计算线信息  绘制航线 */
@@ -601,8 +600,16 @@ export default {
                 [item.onlng, item.onlat, item.onalt], // 起点  
                 [item.offlng, item.offlat, item.offalt] // 终点  
             ]);
-
             this.resultArray = result
+
+            const setMap = new  Map();
+            for (let index = 0; index < newVal.length; index++) {
+                const element = newVal[index];
+                setMap.set('continuous-on-'+ element.id, [element.onlng,element.onlat,element.onalt]);
+                setMap.set('continuous-off-'+ element.id, [element.offlng,element.offlat,element.offalt]);
+            }
+
+            console.log('newVal',newVal,setMap);
             this.drawLines(result);
         },
         /**保存航线☞store */
@@ -620,11 +627,9 @@ export default {
                     values[2] = coord[2];
                 }
                 return values;
-            }); // [coord[0], coord[1], 20]
+            }); 
             this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates, unifiedHeight, }); // 存储store
-
             if (showMsg) {
-                console.log('已保存');
                 this.showToast('已保存')
             }
         },
@@ -662,38 +667,23 @@ export default {
         //#endregion
 
         // #region ------------------------------------------------------------------ 后端查询 -----------------------------------------------------------------------------
-        /**早期查询初始 */
-        async queryInfo(UavSn = this.defaultUavSn) {
-            var data = await this.queryFlightNumber(UavSn);
-            this.flylist = data;
-            if (data.length >= 1) {
-                latestSortyInfo = data[0]; // 获取架次最新id
-                this.queryPhotoInfo(data[0].id, UavSn);
-                this.queryHoleInfo(data[0].id, UavSn);
-            } else {
-                this.photolist = []
-                this.holelist = []
-            }
-        },
         /**最新的初始查询 */
         async queryNewInfo() {
             var data = await this.queryHandle()
             this.handleList = data || [];
-            if (data.length >= 1) {
-                this.currentHandleId = data[0].id
-                this.queryBlockList(data[0].id);
-                this.queryPointList(data[0].id); // 查询处理单个
-                this.queryLineList(data[0].id)
-            } else {
+            if (data.length <= 0) {
+                this.currentHandleId = null;
                 this.blockList = []
-                this.pointlist = []
+                this.pointlist = [];
+                return false;
             }
+            this.chooseOtherHandle(data[0])
         },
         //#region 现在左至右
         /**选择其他处理信息 */
         async chooseOtherHandle(handleObj) {
             const latestHandleId = handleObj.id
-            if (this.currentHandleId == latestHandleId) return false;
+            if (this.currentHandleId === latestHandleId) return false;
             this.queryBlockList(latestHandleId),
                 this.queryPointList(latestHandleId)
             this.queryLineList(latestHandleId)
@@ -750,7 +740,7 @@ export default {
                 this.centerloading = false;
             }
         },
-        /**补播路径信息 */
+        /**补播路径点信息 */
         async queryPointList(id) {
             this.rightloading = true;
             try {
@@ -801,144 +791,115 @@ export default {
 
         },
 
+
+        //#endregion
+        // 切换
+        //#region ----------------------------------------------------------------------切换----------------------------------------------------------------------------------
+        /**查询点1与线0 切换单点还是连续*/
+        switchReseedingType(type , checked = false) {
+            console.log('type',type,checked);
+            
+            if (type) {
+                // type : 1 
+                this.selectAllLine(checked); //切换到点 取消线全选
+            } else {
+                this.selectAllPoint(checked); //切换到线 取消点全选
+            }
+        },
+        /**飞行次数切换 */
+        switchFlyTime(e) {
+            if (this.currentType) {
+                this.selectAllPoint(false); //取消全选
+            } else {
+                this.selectAllLine(false); //取消全选 
+            }
+            this.queryPointList(this.currentHandleId) //查询当前处理列表
+            this.queryLineList(this.currentHandleId)  //查询当前处理列表
+        },
+
+        /**点全选设置 */
+        selectAllPoint(val) {
+            this.pointlist.forEach((item) => {
+                this.$set(item, "checked", val);
+            });
+            if (val) {
+                this.choosePointlist = [... this.pointlist]
+            } else {
+                this.choosePointlist = []
+                this.checkAll = false
+            }
+        },
+        /**线全选设置 */
+        selectAllLine(val) {
+            this.lineList.forEach((item) => {
+                this.$set(item, "checked", val);
+            });
+            if (val) {
+                this.chooseLinelist = [... this.lineList]
+            } else {
+                this.chooseLinelist.length = 0
+            }
+        },
+
+
+        /**选择补播路径点*/
+        pointchangeChecked(object) {
+
+            if (object.checked) {
+                this.choosePointlist.push({ ...object });
+            } else {
+                // 从 choosePointlist 对象数组 中删除 object 
+                const index = this.choosePointlist.findIndex(item => item.id === object.id);
+                if (index !== -1) {
+                    this.choosePointlist.splice(index, 1);
+                    this.pointlist.forEach((item) => {
+                        if (object.id == item.id) {
+                            this.$set(item, "checked", false);
+                        }
+                    });
+                }
+                // this.choosePointlist.splice(this.choosePointlist.indexOf({ ...object,checked:true}), 1); 
+
+            }
+            this.checkAll = this.choosePointlist.length === this.pointlist.length;
+            this.isIndeterminate = this.choosePointlist.length > 0 && this.choosePointlist.length < this.pointlist.length;
+        },
+        /**选择补播路径线*/
+        linechangeChecked(object) {
+            if (object.checked) {
+                this.chooseLinelist.push({ ...object });
+            } else {
+                const index = this.chooseLinelist.findIndex(item => item.id === object.id);
+                if (index !== -1) {
+                    this.chooseLinelist.splice(index, 1);
+                    this.lineList.forEach((item) => {
+                        if (object.id == item.id) {
+                            this.$set(item, "checked", false);
+                        }
+                    });
+                }
+            }
+            this.checkAll = this.chooseLinelist.length === this.lineList.length;
+            this.isIndeterminate = this.chooseLinelist.length > 0 && this.chooseLinelist.length < this.lineList.length;
+        },
+        changeScrolling(id) {
+            let classid = ".photoId-" + id;
+            let tablecardElement = document.querySelectorAll('.table-card')
+            console.log(tablecardElement);
+            const offsetHeight = tablecardElement[0].offsetTop
+            console.log(offsetHeight);
+            let element = document.querySelectorAll(classid);
+            element[0].scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        },
+
         //#endregion
 
-        //#region ------------------------------------------------------------以前左至右---------------------------------------------------
-        /**切换架次 */
-        async switchingFlightSorties(item) {
-            if (item.id != latestSortyInfo.id) {
-                this.islatestSortyInfo = false;
-                //查询 架次下的图片与点
-                var data = await this.queryPhotoInfo(item.id, item.uavId);
-                await this.queryHoleInfo(item.id, item.uavId);
-                // 清除航线
-                this.$refs.CesiumMap.clearLines();
-                // clearLines
-                // 播种信息
-                // for (let i = 0; i < this.holelist.length; i++) {
-                //     // if(data.length>1){
-                //     //     this.queryHoleSeedingInfo(data.id)
-                //     // }
-                // }
-            } else {
-                this.islatestSortyInfo = true;
-                //查询 架次下的图片与点
-                this.queryPhotoInfo(item.id, item.uavId);
-                this.queryHoleInfo(item.id, item.uavId);
-            }
-        },
-        /**一段时间戳 */
-        calculateTimeRange(days) {
-            const startTime = Date.now() - days * 24 * 60 * 60 * 1000;
-            const endTime = Date.now();
-            return { startTime, endTime };
-        },
-        /**查询飞行架次 根据无人机id查询 一个月的飞行记录*/
-        async queryFlightNumber(UavSn = this.defaultUavSn) {
-            this.leftloading = true;
-            try {
-                const { startTime, endTime } = this.calculateTimeRange(30); // 计算时间范围
-                // 时间戳大1000倍
-                let formdata = new FormData();
-                formdata.append("uavId", UavSn);
-                formdata.append("startTime", startTime);
-                formdata.append("endTime", endTime);
-                const response = await this.$store.dispatch(
-                    "uavs/queryFlightNumber",
-                    formdata
-                );
-                const { code, message, data } = response;
-                if (code === 1) {
-                    return data; // 返回数据
-                } else {
-                    this.showMessage(message, "warning");
-                }
-            } catch (error) {
-                this.showMessage(error, "error");
-            } finally {
-                this.leftloading = false;
-            }
-        },
-        /**查询图片 */
-        async queryPhotoInfo(id, uavSn = this.defaultUavSn) {
-            this.centerloading = true;
-            try {
-                let formdata = new FormData();
-                formdata.append("uavId", uavSn);
-                formdata.append("eachsortieId", id);
-                const response = await this.$store.dispatch(
-                    "uavs/queryPhotoInfo",
-                    formdata
-                );
-                const { code, message, data } = response;
-                if (code === 1) {
-                    this.photolist = data;
-                    return data; // 返回数据
-                } else {
-                    this.showMessage(message, "warning");
-                }
-            } catch (error) {
-                this.showMessage(error, "error");
-            } finally {
-                this.centerloading = false;
-            }
-        },
-        /**查询洞信息 */
-        async queryHoleInfo(id, uavSn = this.defaultUavSn) {
-            this.rightloading = true;
-            try {
-                const formdata = new FormData(); // 查询架次图片
-                formdata.append("uavId", uavSn);
-                formdata.append("eachsortieId", id);
-                formdata.append("photoId", null);
 
-                const response = await this.$store.dispatch("uavs/queryHoleInfo", formdata);
-                const { code, message, data } = response;
 
-                if (code === 1) {
-                    this.holelist = data;
-                } else {
-                    this.showMessage(message, "warning");
-                }
-            } catch (error) {
-                this.showMessage(error, "error");
-            } finally {
-                this.rightloading = false;
-            }
-        },
-        //#region 早期查询空斑播种记录信息（切换除去第一条数据）
-        /**架次查询空板播种信息 */
-        async queryHoleSeedingInfoByeachsortieId(id) {
-            try {
-                const formdata = new FormData(); // 查询架次图片
-                formdata.append("eachsortieId", id);
-                const response = await this.$store.dispatch("uavs/queryHoleSeedingInfoByeachsortieId", formdata);
-                const { code, message, data } = response;
-                if (code === 1) {
 
-                } else {
-                    this.showMessage(message, "warning");
-                }
-            } catch (error) {
-                this.showMessage(error, "error");
-            }
-        },
-        /**洞斑id查询播种信息 */
-        async queryHoleSeedingInfo(id) {
-            try {
-                let formdata = new FormData(); // 查询架次图片
-                formdata.append("uavId", this.defaultUavSn);
-                formdata.append("eachsortieId", id);
-                formdata.append("photoId", null);
-                const response = await this.$store.dispatch("uavs/queryHoleSeedingInfo", formdata);
-                if (code === 1) {
-                    return data;
-                } else {
-                    this.showMessage(message, "warning");
-                }
-            } catch (error) { }
-        },
-        //#endregion 
         /**页面新增按钮--上传 */
         //#region ---------------------------------------------------------------上传补播路径任务弹窗---------------------------------------------------------------------------
         /**打开弹窗 */
@@ -1105,7 +1066,6 @@ export default {
                 if (code === 1) {
                     // 后端解析航线数据获取对应的经纬度高即可 
                     this.respondRouteInfo(data)
-
                     this.showMessage("下载成功，请点击保存", "success");
 
                 } else {
@@ -1317,144 +1277,6 @@ export default {
 
         },
         // #endregion
-        //#region ----------------------------------------------------------------------切换----------------------------------------------------------------------------------
-        /**查询点1与线0 切换*/
-        switchType(type) {
-            if (type) {
-                this.selectAllLine(false); //切换到点 取消线全选
-            } else {
-                this.selectAllPoint(false); //切换到线 取消点全选
-            }
-        },
-        /**飞行次数切换 */
-        switchFlyTime(e) {
-            if (this.currentType) {
-                this.selectAllPoint(false); //取消全选
-            } else {
-                this.selectAllLine(false); //取消全选 
-            }
-            this.queryPointList(this.currentHandleId) //查询当前处理列表
-            this.queryLineList(this.currentHandleId)  //查询当前处理列表
-        },
-
-        /**点全选设置 */
-        selectAllPoint(val) {
-            this.pointlist.forEach((item) => {
-                this.$set(item, "checked", val);
-            });
-            if (val) {
-                this.choosePointlist = [... this.pointlist]
-            } else {
-                this.choosePointlist = []
-                this.checkAll = false
-            }
-        },
-        /**线全选设置 */
-        selectAllLine(val) {
-            this.lineList.forEach((item) => {
-                this.$set(item, "checked", val);
-            });
-            if (val) {
-                this.chooseLinelist = [... this.lineList]
-            } else {
-                this.chooseLinelist.length = 0
-            }
-        },
-
-
-        /**选择补播路径点*/
-        pointchangeChecked(object) {
-
-            if (object.checked) {
-                this.choosePointlist.push({ ...object });
-            } else {
-                // 从 choosePointlist 对象数组 中删除 object 
-                const index = this.choosePointlist.findIndex(item => item.id === object.id);
-                if (index !== -1) {
-                    this.choosePointlist.splice(index, 1);
-                    this.pointlist.forEach((item) => {
-                        if (object.id == item.id) {
-                            this.$set(item, "checked", false);
-                        }
-                    });
-                }
-                // this.choosePointlist.splice(this.choosePointlist.indexOf({ ...object,checked:true}), 1); 
-
-            }
-            this.checkAll = this.choosePointlist.length === this.pointlist.length;
-            this.isIndeterminate = this.choosePointlist.length > 0 && this.choosePointlist.length < this.pointlist.length;
-        },
-        /**选择补播路径线*/
-        linechangeChecked(object) {
-            if (object.checked) {
-                this.chooseLinelist.push({ ...object });
-            } else {
-                const index = this.chooseLinelist.findIndex(item => item.id === object.id);
-                if (index !== -1) {
-                    this.chooseLinelist.splice(index, 1);
-                    this.lineList.forEach((item) => {
-                        if (object.id == item.id) {
-                            this.$set(item, "checked", false);
-                        }
-                    });
-                }
-            }
-            this.checkAll = this.chooseLinelist.length === this.lineList.length;
-            this.isIndeterminate = this.chooseLinelist.length > 0 && this.chooseLinelist.length < this.lineList.length;
-        },
-        /**空洞选择 */
-        // holechangeChecked(val, event) {
-        //     const photo1List = this.holelist.filter(
-        //         (item) => item.photoId === val.photoId
-        //     );
-        //     const findIndex = this.holelist.findIndex(
-        //         (checkedItem) => val.id == checkedItem.id
-        //     );
-
-        //     if (findIndex >= 0) {
-        //         this.$set(this.holelist[findIndex], "checked", event);
-        //     }
-        //     const isAllChecked = photo1List.every((item) => item.checked);
-
-        //     if (isAllChecked) {
-        //         this.photolist.forEach((item) => {
-        //             if (val.photoId == item.id) {
-        //                 this.$set(item, "checked", event);
-        //             }
-        //         });
-        //     } else {
-        //         this.photolist.forEach((item) => {
-        //             if (val.photoId == item.id) {
-        //                 this.$set(item, "checked", false);
-        //             }
-        //         });
-        //     }
-        //     if (event) {
-        //         this.checkedPoint.push(this.holelist[findIndex]);
-        //     } else {
-        //         const removeIndex = this.checkedPoint.findIndex(
-        //             (item) => item.id === val.id
-        //         );
-        //         if (removeIndex >= 0) {
-        //             this.checkedPoint.splice(removeIndex, 1);
-        //         }
-        //     }
-        // },
-        changeScrolling(id) {
-            let classid = ".photoId-" + id;
-            let tablecardElement = document.querySelectorAll('.table-card')
-            console.log(tablecardElement);
-            const offsetHeight = tablecardElement[0].offsetTop
-            console.log(offsetHeight);
-            let element = document.querySelectorAll(classid);
-            element[0].scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-            });
-        },
-
-        //#endregion
-
 
 
         //#region ----------------------------------------------------------------------拖拽api----------------------------------------------------------------------
@@ -1665,12 +1487,13 @@ export default {
     created() {
     },
     //生命周期 - 挂载完成（可以访问DOM元素）
-    mounted() {
+    async mounted() {
         let key = "defaultUav-" + this.userId;
         this.defaultUavSn = localStorage.getItem(key)
-        this.queryNewInfo()
-        this.queryAllUavs();
         this.createSse() // 看不
+        await this.queryNewInfo();
+        this.queryAllUavs();
+
     },
     beforeCreate() { }, //生命周期 - 创建之前
     beforeMount() { }, //生命周期 - 挂载之前

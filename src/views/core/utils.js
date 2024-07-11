@@ -409,6 +409,51 @@ function pointVisibilityOnEarth(point, viewer) {
   return new Cesium.EllipsoidalOccluder(Cesium.Ellipsoid.WGS84, viewer.camera.position)
     .isPointVisible(point);
 }
+// 计算面积  
+function getPolygonArea(coordinates) {
+  let sum = 0;
+  for (let i = 0; i < coordinates.length; i++) {
+      let j = (i + 1) % coordinates.length;
+      sum += coordinates[i].x * coordinates[j].y - coordinates[j].x * coordinates[i].y;
+  }
+  return Math.abs(sum / 2);
+}
+function debounce(func, wait) {  
+  let timeout;  
+  return function() {  
+    const context = this;  
+    const args = arguments;  
+    // 清除上一次的定时器  
+    clearTimeout(timeout);  
+    // 设置新的定时器  
+    timeout = setTimeout(() => {  
+      func.apply(context, args);  
+    }, wait);  
+  };  
+}  
+
+function throttle(func, limit) {  
+  let lastFunc;  
+  let lastRan;  
+  return function() {  
+    const context = this;  
+    const args = arguments;  
+    if (!lastRan) {  
+      func.apply(context, args);  
+      lastRan = Date.now();  
+    } else {  
+      clearTimeout(lastFunc);  
+      // 将下一次函数执行延迟到距离上次执行时间大于limit之后  
+      lastFunc = setTimeout(function() {  
+        if ((Date.now() - lastRan) >= limit) {  
+          func.apply(context, args);  
+          lastRan = Date.now();  
+        }  
+      }, limit - (Date.now() - lastRan));  
+    }  
+  };  
+}  
+  
 export {
   moveDiv,
   errroCatch,
@@ -420,7 +465,10 @@ export {
   CVT,
   CursorTip,
   checkComponent,
-  checkViewer
+  checkViewer,
+  debounce,
+  throttle,
+  getPolygonArea
 };
 export default {
   moveDiv,
@@ -431,5 +479,8 @@ export default {
   downloadFile,
   CVT,
   CursorTip,
-  pointVisibilityOnEarth
+  pointVisibilityOnEarth,
+  debounce,
+  throttle,
+  getPolygonArea
 };

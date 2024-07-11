@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-21 11:28:38
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-05 16:32:23
+ * @LastEditTime: 2024-07-11 15:05:02
 -->
 <!-- 无人机监控管理 -->
 <template>
@@ -549,8 +549,6 @@ export default {
                 console.log('获取航点第一个');
                 /**获取航点第一个*/
                 if (this.geoCoordinates.length > 0 && this.defaultUavHeartbeat && Object.keys(this.defaultUavHeartbeat).length > 0) {
-                    // const [longitude, latitude] = this.geoCoordinates[0];
-                    // const altitude = this.geoCoordinates[0][2];
 
                     const [longitude, latitude, altitude] = this.geoCoordinates[0];
 

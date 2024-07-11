@@ -8,7 +8,7 @@ import {
 } from './Graphic'
 import utils from './utils'
 import {
-  CVT
+  CVT, getPolygonArea
 } from './utils'
 import GraphicType from './GraphicType'
 import {
@@ -82,7 +82,7 @@ class GraphicManager {
     this.selectedNodeIndex = -1
     //Graphic集合
     this.manager = new Map()
-    const self = this 
+    const self = this
     document.onkeydown = function (event) {
 
       if (self.mode !== 'edit') return;
@@ -378,7 +378,7 @@ class GraphicManager {
   }
 
   // function name(点的数组， 航便间距， 转向) {
-    
+
   // }
   /**
    * @name: 
@@ -985,8 +985,6 @@ class GraphicManager {
       const graphicId = self.graphicId;
       // console.log(self.graphicType);  // 修改为undefind
       let type = self.editManager.mtype
-
-
       let positions = self.editManager.type === 'POLYGON' ? self.editManager.gobackpositions() : null
       // let position =positions[0]
       // let cartesians = CVT.cartesian2Degrees(position, self.viewer);
@@ -1076,7 +1074,8 @@ class GraphicManager {
           // self.positions.push(cartesian);
           self.manager.get(self.graphicId).addNode(cartesian); //添加
           console.log('添加最后一个元素');
-
+          const area = getPolygonArea(self.positions);
+          self.tip.updateText('右键结束标绘,面积：' + Number(area).toFixed(2) + " 平方米")
         }
       } else if (self.mode == 'edit' && self.dragging) {
         if (self.selectedNodeIndex !== -1) {

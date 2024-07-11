@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-12-01 16:44:32
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-08 20:36:10
+ * @LastEditTime: 2024-07-11 13:46:52
 -->
 <!-- 航线列表 -->
 <template>
@@ -63,32 +63,11 @@
                         </el-row>
                     </div>
                 </template>
-                <!-- <virtual-list style="height: 360px; overflow-y: auto;" class='' 
-                :data-key="'key'" 
-                :data-sources="route.positions" 
-                :data-component="itemComponent" :extra-props="{
-       itemClick:itemClick,
-       current:current}" /> -->
-                <virtual-list class="list" style="height: 200px; overflow-y: auto;" :data-key="'id'" :data-sources="getObjData(route.positions)" :data-component="positionsItem" :estimate-size="50"
+                <virtual-list class="list" style="height: 200px; overflow-y: auto;" :data-key="'id'" :data-sources="getObjData(route.positions)" :data-component="PositionsItem" :estimate-size="50"
                     :extra-props="{
                         itemClick: itemClick,
                         current: current
                     }" />
-
-                <!-- <div v-for="(position, index) in route.positions" :key="index" class="position-item">
-                    <el-row :gutter="5" style="width:100%">
-                        <el-col :span="24">
-                            {{`航点${index}`}}
-                        </el-col>
-                        <el-col :span="12">
-                            <span>{{position[0]}}</span>
-                        </el-col>
-                        <el-col :span="12">
-                            <span>{{position[1]}}</span>
-                        </el-col>
-                    </el-row>
-
-                </div> -->
             </el-card>
         </div>
         <!-- 显示 tasksRoutes 的内容 -->
@@ -169,7 +148,7 @@ export default {
             routelistmap: {},
             items: getData(1000),
             item: Item,
-            positionsItem: positionsItem,
+            PositionsItem: positionsItem,
             itemComponent: Item,//虚拟滚动组件循环对象
             current: '',
             // routes: [], // 添加一个新的属性来存储航线数据
@@ -256,8 +235,6 @@ export default {
                 })
             }
             return data
-
-
         },
         init() {
             // document.addEventListener("getpositionsEvent", (event) => {
