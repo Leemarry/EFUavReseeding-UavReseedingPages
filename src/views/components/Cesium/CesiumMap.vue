@@ -625,7 +625,7 @@ export default {
          * @return {*}
          */
         async drawLines(PositionsList = this.geoCoordinates) {
-            const startColor = new Cesium.Color.fromCssColorString('#009DFF') // #9EE8E7
+            const startColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3) // #9EE8E7
             const endColor = new Cesium.Color.fromCssColorString('#9EE8E7')
             const color = Cesium.Color.BLUE
             let viewer = window.viewer;

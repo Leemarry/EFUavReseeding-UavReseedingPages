@@ -376,6 +376,10 @@ class GraphicManager {
       viewer.entities.removeAll();
     }
   }
+
+  // function name(点的数组， 航便间距， 转向) {
+    
+  // }
   /**
    * @name: 
    * @msg: 点数组（三维坐标）绘制航线
