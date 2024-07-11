@@ -998,6 +998,7 @@ export default {
 }
 
 .result-image-demo {
+overflow: hidden;
     .result-titel {
         height: 40px;
         text-align: center;
