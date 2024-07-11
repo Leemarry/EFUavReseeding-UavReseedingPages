@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-12-01 16:44:32
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-11 13:46:52
+ * @LastEditTime: 2024-07-11 16:54:09
 -->
 <!-- 航线列表 -->
 <template>
@@ -35,13 +35,13 @@
                         <div class="动作前">动作前</div>
                     </el-col>
                     <el-col :span="8">
-                        <el-input placeholder="请输入" v-model="startTime" ></el-input>
+                        <el-input placeholder="请输入" v-model="startTime"></el-input>
                     </el-col>
                     <el-col :span="4">
                         <div class="g">动作后</div>
                     </el-col>
                     <el-col :span="8">
-                        <el-input placeholder="请输入" v-model="endTime" ></el-input>
+                        <el-input placeholder="请输入" v-model="endTime"></el-input>
                     </el-col>
                 </el-row>
             </div>
@@ -56,7 +56,7 @@
                             </el-col>
                             <el-col :span="6">
                                 <!-- maploading -->
-                                <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机'" @click=" sendupload(route, 'drow')"></i> 
+                                <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机'" @click=" sendupload(route, 'drow')"></i>
                                 <!-- maploading ? null : -->
                                 <i class="iconfont  icon-baocun cursorStyle" :class="{ disabled: maploading }" :title="'保存航线'" @click="maploading ? null : sendsave(route)"></i>
                             </el-col>
@@ -136,7 +136,7 @@ export default {
     data() {
         //这里存放数据
         return {
-            startTime:1,
+            startTime: 1,
             endTime: 3,
             slidervalue: 5,
             showCloseIcon: false,
@@ -278,22 +278,32 @@ export default {
         sendupload(sendRoute, type) {
 
             // drow // tasks        startTime:1,        endTime: 3,
-            if(type === 'drow'){
+            if (type === 'drow') {
                 sendRoute.startTime = this.startTime//  Number(this.startTime)
                 sendRoute.endTime = this.endTime// Number(this.endTime )
-                console.log(sendRoute,'sendRoute',type);
-     this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
-            }else{
-    this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
+                sendRoute.speed = this.slidervalue
+                console.log(sendRoute, 'sendRoute', type);
+                this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
+            } else {
+                this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
             }
-  
-            
-        
+
+
+
             // this.$emit('send:toggleRouteManager') // //收起下拉
+        },
+        /**组件发送保存航线至minion */
+        sendsave(saveRoute) {
+            saveRoute.startTime = this.startTime
+            saveRoute.endTime = this.endTime
+            console.log('组件发送保存航线', saveRoute);
+            this.$bus.$emit('send:saveRouteToMinio', saveRoute, this.slidervalue)
+            // console.log('saveRoute',saveRoute,this.slidervalue);
+            this.$emit('send:toggleRouteManager')  //收起下拉
+            // this.$bus.$emit('send:ceshiRouteToMinio', saveRoute);  //发送保存至minio
         },
         /*编辑删除航线 */
         editRouteTask(route, type) {
-
             this.$confirm('确认删除该航线任务？', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
@@ -310,16 +320,7 @@ export default {
         readerkml(sendRoute, type) {
             this.$bus.$emit('send:readerKml', sendRoute)
         },
-        /**组件发送保存航线 */
-        sendsave(saveRoute) {
-            saveRoute.startTime = this.startTime
-            saveRoute.endTime = this.endTime
-            console.log('组件发送保存航线',saveRoute);
-            this.$bus.$emit('send:saveRouteToMinio', saveRoute, this.slidervalue)
-            // console.log('saveRoute',saveRoute,this.slidervalue);
-            this.$emit('send:toggleRouteManager')  //收起下拉
-            // this.$bus.$emit('send:ceshiRouteToMinio', saveRoute);  //发送保存至minio
-        },
+
         //#endregion
 
         //#region 时间处理
