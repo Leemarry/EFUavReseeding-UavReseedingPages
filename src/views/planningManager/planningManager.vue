@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-23 19:08:24
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-11 15:28:19
+ * @LastEditTime: 2024-07-12 20:09:43
 -->
 <!--  -->
 <template>
@@ -212,7 +212,7 @@
                                                 <el-radio :label="1">已播</el-radio>
                                                 <el-radio :label="2">全部</el-radio>
                                             </el-radio-group>
-                                            <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="switchReseedingType( !currentType ,checkAll)">{{ `全选` }}</el-checkbox>
+                                            <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="switchReseedingType(!currentType, checkAll)">{{ `全选` }}</el-checkbox>
                                         </div>
                                     </el-card>
                                     <div v-if='currentType'>
@@ -477,7 +477,7 @@ export default {
             choosePointlist: [], // 选中的点列表
             lineList: [], // 线列表
             chooseLinelist: [], // 选中的线列表
-
+            pointMap:new Map(),
             btnloading: false,
             fileList: [],
             isIndeterminate: true,
@@ -543,23 +543,29 @@ export default {
     //监控data中的数据变化
     watch: {
         choosePointlist(newVal, oldVal) {
-            this.pointToRoute(newVal)
+            // 获取每一个的索引
+            const indexArr = []
+            for (let i = 0; i < newVal.length; i++) {
+                const index = this.pointlist.findIndex(item => item.id === newVal[i].id);
+                if (index !== -1) {
+                    indexArr.push(index)
+                }
+            }
+            const colorPoints = this.pointToRoute(newVal)  // 需要将选中的点高亮
+            // 将选中索引设置高亮
+            // this.updatePointsColor(colorPoints, indexArr)
         },
         chooseLinelist: {
             handler(newVal, oldVal) {
-                this.lineToRoute(newVal)
+                const colorPoints = this.lineToRoute(newVal) // 需要将选中的点高亮并连接线
+                // 将选中索引设置高亮
+                this.updatePointsColor(colorPoints, indexArr)
             },
             deep: true // 深度监听对象数组的变化  
         }
     },
     //方法集合
     methods: {
-        handlequery() {
-            this.queryPointList(this.currentHandleId);
-        },
-        selectAllHandle(bool) {
-            this.value1 = bool ? this.options.map(v => v.value) : [];
-        },
         // #region -------------------------------------------------------------------- 组件传递 ---------------------------------------------------------
         getCoordinates() {
             console.log("注册地图点击事件");
@@ -567,31 +573,37 @@ export default {
         },
         /**绘制航线 */
         drawLines(positions, type = this.currentType) {
-            if (type) {
-
-            } else {
-
-            }
+            console.log('');
+            
             this.$refs.CesiumMap.drawLines(positions);
+        },
+        drawPoints(positions) {
+            this.$refs.CesiumMap.drawPoints(positions);
+        },
+        /** */
+        updatePointsColor(colorPoints, indexArr) {
+            this.$refs.CesiumMap.updatePointsColor(colorPoints, indexArr)
+        },
+        sendEntityMap(entityMap,viewer){
+            console.log('entityMap',entityMap,viewer);
         },
         /**后端返回数据 */
         respondRouteInfo(newVal) {
             // this.centerDialogVisible = true
             const result = newVal.map((item) => [item.lng / 10000000, item.lat / 10000000, item.altRel / 100]);  // 差一个高度
             this.resultArray = result
-            this.drawLines(result);
+            this.drawPoints(result);
         },
         /**计算点信息  绘制航线 */
         pointToRoute(newVal) {
             const result = newVal.map((item) => [item.lng, item.lat, item.alt]);
-            const setMap =new  Map();
+            const setMap = new Map();
             for (let index = 0; index < newVal.length; index++) {
                 const element = newVal[index];
-                setMap.set('single'+element.id,[element.lng,element.lat,element.alt])
+                setMap.set('single' + element.id, [element.lng, element.lat, element.alt])
             }
             this.resultArray = result
-            console.log('resultArray',setMap, result);
-            this.drawLines(result);
+            return result || []
         },
         /* 计算线信息  绘制航线 */
         lineToRoute(newVal) {
@@ -602,22 +614,33 @@ export default {
             ]);
             this.resultArray = result
 
-            const setMap = new  Map();
+            const setMap = new Map();
             for (let index = 0; index < newVal.length; index++) {
                 const element = newVal[index];
-                setMap.set('continuous-on-'+ element.id, [element.onlng,element.onlat,element.onalt]);
-                setMap.set('continuous-off-'+ element.id, [element.offlng,element.offlat,element.offalt]);
+                setMap.set('continuous-on-' + element.id, [element.onlng, element.onlat, element.onalt]);
+                setMap.set('continuous-off-' + element.id, [element.offlng, element.offlat, element.offalt]);
             }
-
-            console.log('newVal',newVal,setMap);
-            this.drawLines(result);
+            return result || []
+        },
+        /** 用于切换 绘制所有的点 */
+        drawAllPoints(arr, type) {
+            if (type != this.currentType) { return false; }
+            if (type) {
+                // 绘制所有点
+                const PositionsList = this.pointToRoute(arr)
+                this.drawPoints(PositionsList);
+            } else {
+                // 绘制所有点上的线
+                const PositionsList = this.lineToRoute(arr)
+                this.drawPoints(PositionsList);
+            }
         },
         /**保存航线☞store */
         saveRouteToStore(showMsg = false) {
             const dateId = Date.now();
             const mid = dateId;
             const unifiedHeight = null;
-            var geoCoordinates = this.resultArray.map(coord => {
+            var geo = this.resultArray.map(coord => {
                 let values = new Array(3);
                 values[0] = coord[0]; // 航线经度
                 values[1] = coord[1]; // 航纬度
@@ -627,8 +650,8 @@ export default {
                     values[2] = coord[2];
                 }
                 return values;
-            }); 
-            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates, unifiedHeight, }); // 存储store
+            });
+            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates:geo, unifiedHeight, }); // 存储store
             if (showMsg) {
                 this.showToast('已保存')
             }
@@ -636,7 +659,7 @@ export default {
         saveRouteData(showMsg) {
             /**数据处理*/
             // [[113.36887409647213,23.155143504551752,19.00895890982441],[113.36887409647213,23.155143504551752,19.00895890982441]] 
-            var geoCoordinates = this.choosePointlist.map((obj) => {
+            var geo = this.choosePointlist.map((obj) => {
                 let values = new Array(3);
                 values[0] = obj.lng; // 航线经度
                 values[1] = obj.lat; // 航纬度
@@ -650,7 +673,7 @@ export default {
             const dateId = Date.now();
             const mid = dateId;
             const unifiedHeight = null;
-            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates, unifiedHeight, }); // 存储store
+            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates:geo, unifiedHeight, }); // 存储store
             if (showMsg) {
                 this.showToast('已保存')
             }
@@ -684,8 +707,8 @@ export default {
         async chooseOtherHandle(handleObj) {
             const latestHandleId = handleObj.id
             if (this.currentHandleId === latestHandleId) return false;
-            this.queryBlockList(latestHandleId),
-                this.queryPointList(latestHandleId)
+            this.queryBlockList(latestHandleId)
+            this.queryPointList(latestHandleId)
             this.queryLineList(latestHandleId)
             this.currentHandleId = latestHandleId
             this.choosePointlist = []
@@ -754,11 +777,12 @@ export default {
                     pointList.forEach((item => {
                         item.checked = false
                     }))
+                    this.drawAllPoints(pointList, 1)
                     this.pointlist = pointList;
                 } else {
                     this.showMessage(message, "warning");
                 }
-                return Promise.resolve(response);
+                return response;
             } catch (error) {
                 this.showMessage(error, "error");
                 return Promise.reject(error);
@@ -779,6 +803,7 @@ export default {
                     lineList.forEach((item => {
                         item.checked = false
                     }))
+                    this.drawAllPoints(lineList, 0)
                     this.lineList = lineList
                 } else {
                     this.showMessage(message, "warning");
@@ -796,11 +821,9 @@ export default {
         // 切换
         //#region ----------------------------------------------------------------------切换----------------------------------------------------------------------------------
         /**查询点1与线0 切换单点还是连续*/
-        switchReseedingType(type , checked = false) {
-            console.log('type',type,checked);
-            
+        switchReseedingType(type, checked = false) {
             if (type) {
-                // type : 1 
+                // type : 1  当前是点
                 this.selectAllLine(checked); //切换到点 取消线全选
             } else {
                 this.selectAllPoint(checked); //切换到线 取消点全选
@@ -824,31 +847,40 @@ export default {
             });
             if (val) {
                 this.choosePointlist = [... this.pointlist]
+                // 全选 需要将点绘制成线
+
             } else {
                 this.choosePointlist = []
                 this.checkAll = false
+                // 不是全选 仅需绘制点
+                console.log('不是全选 仅需绘制点', this.pointlist);
+                this.drawAllPoints(this.lineList, 0)
             }
         },
-        /**线全选设置 */
+        /**线是否全选设置 */
         selectAllLine(val) {
             this.lineList.forEach((item) => {
                 this.$set(item, "checked", val);
             });
             if (val) {
                 this.chooseLinelist = [... this.lineList]
+
             } else {
                 this.chooseLinelist.length = 0
+                this.checkAll = false
+                // 不是全选 仅需绘制点
+                console.log('不是全选 仅需绘制点', this.lineList);
+
+                this.drawAllPoints(this.pointlist, 1)
             }
         },
-
-
         /**选择补播路径点*/
         pointchangeChecked(object) {
 
             if (object.checked) {
                 this.choosePointlist.push({ ...object });
             } else {
-                // 从 choosePointlist 对象数组 中删除 object 
+                // 从  对象数组 中删除 object 
                 const index = this.choosePointlist.findIndex(item => item.id === object.id);
                 if (index !== -1) {
                     this.choosePointlist.splice(index, 1);
@@ -858,8 +890,6 @@ export default {
                         }
                     });
                 }
-                // this.choosePointlist.splice(this.choosePointlist.indexOf({ ...object,checked:true}), 1); 
-
             }
             this.checkAll = this.choosePointlist.length === this.pointlist.length;
             this.isIndeterminate = this.choosePointlist.length > 0 && this.choosePointlist.length < this.pointlist.length;
@@ -931,8 +961,6 @@ export default {
         // #region ---------------------------------------------------------------  监听 -------------------------------------------------------
         /**化点 */
         calculateEquinox(onlng, onlat, offlng, offlat, spacing = 2) {
-            console.log(onlng, onlat, offlng, offlat, spacing);
-
             var from = turf.point([onlng, onlat]);
             var to = turf.point([offlng, offlat]);
             var options = {
@@ -1485,14 +1513,20 @@ export default {
     },
     //生命周期 - 创建完成（可以访问当前this实例）
     created() {
+        this.$bus.$on('send:entityMap', this.sendEntityMap);  //发送保存至minio
     },
     //生命周期 - 挂载完成（可以访问DOM元素）
     async mounted() {
+        console.log('父组件');
         let key = "defaultUav-" + this.userId;
         this.defaultUavSn = localStorage.getItem(key)
         this.createSse() // 看不
         await this.queryNewInfo();
-        this.queryAllUavs();
+        this.queryAllUavs(); 
+        const CesiumMap = this.$refs.CesiumMap;
+        if(CesiumMap){
+            this.$refs.CesiumMap.handleOperation2();
+        }
 
     },
     beforeCreate() { }, //生命周期 - 创建之前
@@ -1500,6 +1534,7 @@ export default {
     beforeUpdate() { }, //生命周期 - 更新之前
     updated() { }, //生命周期 - 更新之后
     beforeDestroy() {
+        this.$bus.$off('send:entityMap', this.sendEntityMap);  //发送保存至minio
         //移除
         //    window.removeEventListener("message", (e) => this.getMsg(e));
     }, //生命周期 - 销毁之前

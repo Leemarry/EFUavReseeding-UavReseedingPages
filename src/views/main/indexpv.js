@@ -371,7 +371,7 @@ export default {
 
 
     this.$bus.$on('send:saveRouteToMinio', this.sendsaverouteInfo);  //发送保存至minio
-    this.$bus.$on('send:uploadRouteTouav', this.sendrouteInfo);  // 上传至无人机（绘制航线与历史保存航线任务）
+    this.$bus.$on('send:uploadRouteTouav', this.sendRouteToUav);  // 上传至无人机（绘制航线与历史保存航线任务）
     this.$bus.$on('send:readerKml', this.readerKml);  // 上传至无人机（绘制航线与历史保存航线任务）
     this.$bus.$on('send:choiseTime', this.ChoiseTimeEvent)
     this.$bus.$on('send:editRouteTask', this.editRouteTask)
@@ -402,6 +402,10 @@ export default {
     this.init();
     this.startDataCheckTimer(); // 在组件被挂载后启动检查数据定时器
     // this.startTimeoutCheckTimer(); // 在组件被挂载后启动超时提示定时器
+    const CesiumMap = this.$refs.CesiumMap;
+    if(CesiumMap){
+        this.$refs.CesiumMap.handleOperation();
+    }
   },
   // created() {},
   beforeDestroy() {
@@ -586,9 +590,7 @@ export default {
     acpectsend(data) {
       this.createARouteOrNot = data
     },
-    getpositionsEvent() {
 
-    },
 
     /**切换dom(视频=地图) */
     switchMapOrVideo() {
@@ -1873,7 +1875,7 @@ export default {
       this.loadingText = '请求执行中'
     },
     /**执行上传航线 */
-    sendrouteInfo(route, type) {
+    sendRouteToUav(route, type) {
       /**清除以前执行保存vuex */
       this.doMapLoading()
       /**清除以前存在巡检的信息 */
@@ -1901,6 +1903,7 @@ export default {
           startTime:route.startTime,
           endTime:route.endTime,
           speed:route.speed,
+          spacing: route.spacing || 2,
         };
         const data = {
           'mission': route.positions,
@@ -1978,8 +1981,6 @@ export default {
             if (CesiumMap) {
               this.$refs.CesiumMap.drawLines(positions);
             }
-
-            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: positions, unifiedHeight }); // 存储store
           } else {
             this.showMessage(message, "warning");
           }

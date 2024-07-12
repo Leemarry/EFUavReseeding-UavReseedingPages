@@ -1,13 +1,16 @@
 <!-- cesium.js  组件面 -->
 <template>
     <div class="cesiumOutdiv">
-        <!-- icon-shikou -->
-        <i :class="['iconfont', isLockView ? 'icon-gudingshikou' : 'icon-shikou']" :title="isLockView ? '已锁定' : '设置锁定'" @click="setViewport"></i>
+        <div class='tooltip'>
+            <i :class="['iconfont', isLockView ? 'icon-gudingshikou' : 'icon-shikou']" :title="isLockView ? '已锁定' : '设置锁定'" @click="setViewport"></i>
+            <div class='tooltip-text' v-if='areaText'>{{ `面积：${Number(areaText).toFixed(3)}平方米` }}</div>
+        </div>
+
         <div id="cesiumContainer"></div>
 
         <!-- 绘画 -->
         <CesiumDraw v-bind="$attrs" v-on="$listeners" :CursorTipDistance="CursorTipDistance" @sendclearLinesAndstore="clearLinesAndStore" @senddoFlyCommands="senddoFlyCommandsEvent"
-            @editEvent="CesiumEditEvent" :viewer="viewer" v-if="viewer" v-show="visible"></CesiumDraw>
+            @editEvent="CesiumEditEvent" @sendAreaText='setAreaText' :viewer="viewer" v-if="viewer" v-show="visible"></CesiumDraw>
     </div>
 </template>
 
@@ -38,6 +41,7 @@ export default {
     data() {
         //这里存放数据
         return {
+            areaText: null,
             isLockView: true,
             /**心跳数据 */
             beatData: null,
@@ -118,10 +122,6 @@ export default {
             "messageId",
             "defaultUavHeartbeat"
         ]),
-        // currentMidPositionsIsNull() {
-        //     return !this.geoCoordinates;
-        // }
-
     },
     //监控data中的数据变化
     watch: {
@@ -300,7 +300,6 @@ export default {
             //             console.log("cesium加载上了");
             //   });
         },
-
         reloadLoadProgress(viewer = window.viewer) {
             let that = this
             var helper = new Cesium.EventHelper();
@@ -618,95 +617,43 @@ export default {
                 }
             }
         },
+        /** 处理父组件下发的操作 */
+        handleOperation(operation, data) {
+            // 是否是主界面
+            if (this.geoCoordinates.length > 0) {
+                console.log("规划中心点");
+                this.updateMapCenter(this.geoCoordinates[0][0], this.geoCoordinates[0][1], 600.05766199658808, 0, -45);
+                this.drawLines()
+            } else if (this.defaultUavHeartbeat && this.defaultUavHeartbeat.lng !== 0 && this.defaultUavHeartbeat.lng !== 0) {
+                console.log("无人机中心点");
+                let longitude = this.defaultUavHeartbeat.lng
+                let latitude = this.defaultUavHeartbeat.lat;
+                this.updateMapCenter(longitude, latitude, 400.05766199658808, 0, -45);
+            } else {
+                console.log("默认中心点");
+                // 数据库： 113.36887409647213，23.155143504551752
+                this.updateMapCenter(113.36887409647213, 23.155143504551752, 400.05766199658808, 0, -90);
+            }
+        },
+        handleOperation2(){
+           if (this.defaultUavHeartbeat && this.defaultUavHeartbeat.lng !== 0 && this.defaultUavHeartbeat.lng !== 0) {
+                console.log("无人机中心点");
+                let longitude = this.defaultUavHeartbeat.lng
+                let latitude = this.defaultUavHeartbeat.lat;
+                this.updateMapCenter(longitude, latitude, 400.05766199658808, 0, -45);
+            } else {
+                console.log("默认中心点");
+                // 数据库： 113.36887409647213，23.155143504551752
+                this.updateMapCenter(113.36887409647213, 23.155143504551752, 400.05766199658808, 0, -90);
+            }
+
+        },
         /**
          * @name:
          * @msg: 绘制航线-- 用于主页航线
          * @param {*} PositionsList 经度纬度数组
          * @return {*}
          */
-        async drawLines2(PositionsList = this.geoCoordinates) {
-            const startColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3) // #9EE8E7
-            const endColor = new Cesium.Color.fromCssColorString('#9EE8E7').withAlpha(0.3)
-            const color = Cesium.Color.BLUE
-            const lineColor = new Cesium.Color.fromCssColorString('#E6E6E6').withAlpha(0.3) // #9EE8E7
-            let viewer = window.viewer;
-            if (PositionsList.length > 0) {
-                // 设置默认相机视角
-                viewer.camera.setView({
-                    destination: Cesium.Cartesian3.fromDegrees(PositionsList[0][0], PositionsList[0][1], 500),
-                    // 方向，俯视和仰视的视角
-                    orientation: {
-                        heading: Cesium.Math.toRadians(0), // 设置偏航角度（单位：弧度）
-                        pitch: Cesium.Math.toRadians(-90), // 设置俯仰角度（单位：弧度）
-                        roll: Cesium.Math.toRadians(0) // 设置横滚角度（单位：弧度）
-                    }
-                });
-            }
-
-            this.clearLines(); // 清除
-            // 定义航点数组
-            var waypoints = [];
-            // 添加航点
-            window.viewer.scene.globe.depthTestAgainstTerrain = false;
-            for (let i = 0; i < PositionsList.length; i++) {
-                const currentCorlor = i == 0 ? startColor : endColor; //Cesium.Color.YELLOW;
-                var Position = PositionsList[i];
-                var longitude = Position[0];
-                var latitude = Position[1];
-                var height = null;
-                var position = Cesium.Cartographic.fromDegrees(longitude, latitude);
-                var updatedPositions = await Cesium.sampleTerrainMostDetailed(
-                    this.terrainProvider,
-                    [position]
-                );
-                // console.log('高度高度',updatedPositions,Position,position);
-                height = updatedPositions[0].height + 10;
-                var altitude = height; // 指定航点的高度
-                var newPosition = Cesium.Cartesian3.fromDegrees(
-                    longitude,
-                    latitude,
-                    altitude
-                );
-                var pointEntity = new Cesium.Entity({
-                    position: newPosition,
-                    label: {
-                        font: "16px sans-serif",
-                        // text: "航点",
-                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-                        pixelOffset: new Cesium.Cartesian2(0, -10)
-                    },
-                    id: "storePoint" + i,
-                    point: {
-                        color: currentCorlor,
-                        pixelSize: 10
-                    }
-                });
-
-                window.viewer.entities.add(pointEntity);
-                waypoints.push(newPosition);
-            }
-            // 添加航线
-            var redLine = viewer.entities.add({
-                id: "storePolyline",
-                name: "绘制上传的航线",
-                polyline: {
-                    positions: waypoints,
-                    width: 3,
-                    material: lineColor,//  Cesium.Color.RED,
-                    granularity: 0.03
-                }
-            });
-            // 5 秒后修改第一个点的颜色为红色
-            setTimeout(() => {
-                var firstPoint = viewer.entities.getById("storePoint0");
-                if (firstPoint) {
-                    firstPoint.point.color = Cesium.Color.RED;
-                }
-            }, 5000);
-
-            viewer.scene.requestRender();
-        },
         async drawLines(PositionsList = this.geoCoordinates) {
             const startColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3) // #9EE8E7
             const endColor = new Cesium.Color.fromCssColorString('#9EE8E7').withAlpha(0.3)
@@ -726,9 +673,12 @@ export default {
                 });
             }
 
-            this.clearLines(); // 清除
+            this.clearAllPointAndLine(); // 清除
             // 定义航点数组
             var waypoints = [];
+            // 用于存储实体的 map
+            var entityMap = new Map();
+
             // 添加航点
             window.viewer.scene.globe.depthTestAgainstTerrain = false;
             for (let i = 0; i < PositionsList.length; i++) {
@@ -768,6 +718,9 @@ export default {
 
                 window.viewer.entities.add(pointEntity);
                 waypoints.push(newPosition);
+
+                // 将实体添加到 map 中
+                entityMap.set(pointEntity.id, pointEntity);
             }
             // 添加航线
             var redLine = viewer.entities.add({
@@ -780,19 +733,181 @@ export default {
                     granularity: 0.03
                 }
             });
+
+            // 将航线实体添加到 map 中
+            entityMap.set(redLine.id, redLine);
+
             // 5 秒后修改第一个点的颜色为红色
-            setTimeout(() => {
-                var firstPoint = viewer.entities.getById("storePoint0");
-                if (firstPoint) {
-                    firstPoint.point.color = Cesium.Color.RED;
-                }
-            }, 5000);
+            // setTimeout(() => {
+            //     var firstPoint = viewer.entities.getById("storePoint0");
+            //     if (firstPoint) {
+            //         firstPoint.point.color = Cesium.Color.RED;
+            //     }
+            // }, 5000);
 
             viewer.scene.requestRender();
         },
+        async drawPoints(PositionsList = this.geoCoordinates) {
+            const startColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3) // #9EE8E7
+            const endColor = new Cesium.Color.fromCssColorString('#9EE8E7').withAlpha(0.3)
+            const color = Cesium.Color.BLUE
+            const lineColor = new Cesium.Color.fromCssColorString('#E6E6E6').withAlpha(0.3) // #9EE8E7
+            let viewer = window.viewer;
+            if (PositionsList.length > 0) {
+                // 设置默认相机视角
+                viewer.camera.setView({
+                    destination: Cesium.Cartesian3.fromDegrees(PositionsList[0][0], PositionsList[0][1], 500),
+                    // 方向，俯视和仰视的视角
+                    orientation: {
+                        heading: Cesium.Math.toRadians(0), // 设置偏航角度（单位：弧度）
+                        pitch: Cesium.Math.toRadians(-90), // 设置俯仰角度（单位：弧度）
+                        roll: Cesium.Math.toRadians(0) // 设置横滚角度（单位：弧度）
+                    }
+                });
+            }
 
-   
+            this.clearAllPointAndLine(); // 清除
+            // 定义航点数组
+            var waypoints = [];
+            // 用于存储实体的 map
+            var entityMap = new Map();
+
+            // 添加航点
+            window.viewer.scene.globe.depthTestAgainstTerrain = false;
+            for (let i = 0; i < PositionsList.length; i++) {
+                console.log('绘制航点', i);
+
+                const currentCorlor = i == 0 ? startColor : endColor; //Cesium.Color.YELLOW;
+                var Position = PositionsList[i];
+                var longitude = Position[0];
+                var latitude = Position[1];
+                var height = null;
+                var position = Cesium.Cartographic.fromDegrees(longitude, latitude);
+                var updatedPositions = await Cesium.sampleTerrainMostDetailed(
+                    this.terrainProvider,
+                    [position]
+                );
+                // console.log('高度高度',updatedPositions,Position,position);
+                height = updatedPositions[0].height + 10;
+                var altitude = height; // 指定航点的高度
+                var newPosition = Cesium.Cartesian3.fromDegrees(
+                    longitude,
+                    latitude,
+                    altitude
+                );
+                var pointEntity = new Cesium.Entity({
+                    position: newPosition,
+                    label: {
+                        font: "16px sans-serif",
+                        // text: "航点",
+                        horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                        verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                        pixelOffset: new Cesium.Cartesian2(0, -10)
+                    },
+                    id: "storePoint" + i,
+                    point: {
+                        color: currentCorlor,
+                        pixelSize: 10
+                    }
+                });
+
+                window.viewer.entities.add(pointEntity);
+                waypoints.push(newPosition);
+                // 将实体添加到 map 中
+                entityMap.set(pointEntity.id, pointEntity);
+            }
+
+            // this.$bus.$emit('send:entityMap', entityMap, viewer);  //发送保存至minio
+            viewer.scene.requestRender();
+        },
+        /**将所有实体点颜色修改 */
+        async updatePointsColor(colorPoints, indexArr) {
+            // console.log('colorPoints', colorPoints, indexArr);
+            // const startColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3) // #9EE8E7
+            // const endColor = new Cesium.Color.fromCssColorString('#9EE8E7').withAlpha(0.3)
+            // const color = Cesium.Color.BLUE
+            // const lineColor = new Cesium.Color.fromCssColorString('#E6E6E6').withAlpha(0.3) // #9EE8E7
+            // let viewer = window.viewer;
+            // var radar = viewer.entities.getById('storePoint' + 0);
+            // if (radar !== undefined) {
+            //     var position = radar.position.getValue(Cesium.JulianDate.now());
+            //     console.log('position', position, radar.position._value);
+            // }
+            // 获取所有实体的数组
+            // var entities = viewer.entities.values;
+            // var radar = viewer.entities.getById('radar')
+            // 遍历数组，移除所有非 this.vehicleEntity 的实体
+            // 遍历数组，移除所有 id 中包含 "hang" 的实体
+
+            // var waypoints = [];
+            // if(!colorPoints || colorPoints.length  ==0){
+            //     return false;
+            // }
+            // for (let i = 0; i < colorPoints.length; i++) {
+            //     var Position = colorPoints[i];
+            //     var longitude = Position[0];
+            //     var latitude = Position[1];
+            //     var height = null;
+            //     var position = Cesium.Cartographic.fromDegrees(longitude, latitude);
+            //     var updatedPositions = await Cesium.sampleTerrainMostDetailed(
+            //         this.terrainProvider,
+            //         [position]
+            //     );
+            //     // console.log('高度高度',updatedPositions,Position,position);
+            //     height = updatedPositions[0].height + 10;
+            //     var altitude = height; // 指定航点的高度
+            //     var newPosition = Cesium.Cartesian3.fromDegrees(
+            //         longitude,
+            //         latitude,
+            //         altitude
+            //     );
+
+            //     waypoints.push(newPosition);
+
+            // }
+            // this.clearOnlyLines()
+            // // 添加航线
+            // var redLine = viewer.entities.add({
+            //     id: "storePolyline",
+            //     name: "绘制上传的航线",
+            //     polyline: {
+            //         positions: waypoints,
+            //         width: 3,
+            //         material: lineColor,//  Cesium.Color.RED,
+            //         granularity: 0.03
+            //     }
+            // });
+        },
+
+
+
+        clearOnlyLines() {
+            let viewer = window.viewer;
+            viewer.entities.removeById("storePolyline");
+            viewer.scene.requestRender();
+        },
+
         /**清除上传航线 */
+        clearAllPointAndLine() {
+            let viewer = window.viewer;
+            // 获取所有实体的数组
+            var entities = viewer.entities.values;
+            // 遍历数组，移除所有非 this.vehicleEntity 的实体
+            // 遍历数组，移除所有 id 中包含 "hang" 的实体
+            for (var i = 0; i < entities.length; i++) {
+                if (
+                    entities[i].id &&
+                    (entities[i].id.indexOf("store") !== -1 ||
+                        entities[i].id.startsWith("store"))
+                ) {
+                    viewer.entities.remove(entities[i]);
+                    i--;
+                    viewer.scene.requestRender();
+                }
+            }
+            viewer.entities.removeById("storePolyline");
+            viewer.scene.requestRender();
+        },
         clearLines() {
             let viewer = window.viewer;
             // 获取所有实体的数组
@@ -894,8 +1009,7 @@ export default {
         },
         /**重新绘制清除 信息包括 航线信息 与 执行任务后图片信息 与 分析图信息 列表信息 */
         clearLinesAndStore() {
-            console.log('清理数据实时图片数据');
-            this.clearLines()
+            this.clearAllPointAndLine()
             // imageHeartbeatList  resultimageHeartbeatList
             let data = { imageHeartbeatList: [], defaultUavImageData: null, resultimageHeartbeatList: [], defaultUavResultImageData: null }
             // this.$store.dispatch('ws/setUavImageListAboutAll', data)
@@ -1004,6 +1118,9 @@ export default {
 
         },
         // #region --------------------------------------------------------- 组件传递 ---------------------------------------------------------
+        setAreaText(areaText) {
+            this.areaText = areaText;
+        },
         CesiumEditEvent(data) {
             // console.log(data);
         },
@@ -1435,11 +1552,12 @@ export default {
         },
 
         receivemsg(e) {
-            console.log('getpositionsEvent0', e);
+            console.log('getpositionsEvet0', e);
         },
     },
     //生命周期 - 创建完成（可以访问当前this实例）
-    created() { },
+    created() {
+    },
     //生命周期 - 挂载完成（可以访问DOM元素）
     mounted() {
         document.addEventListener("sendmsg", this.receivemsg);
@@ -1473,21 +1591,8 @@ export default {
         this.CreateCesium();
         this.addimageryLayers(this.MapProvider);
 
-        // 是否是主界面
-        if (this.geoCoordinates.length > 0) {
-            console.log("规划中心点");
-            this.updateMapCenter(this.geoCoordinates[0][0], this.geoCoordinates[0][1], 600.05766199658808, 0, -45);
-            this.drawLines()
-        } else if (this.defaultUavHeartbeat && this.defaultUavHeartbeat.lng !== 0 && this.defaultUavHeartbeat.lng !== 0) {
-            console.log("无人机中心点");
-            let longitude = this.defaultUavHeartbeat.lng
-            let latitude = this.defaultUavHeartbeat.lat;
-            this.updateMapCenter(longitude, latitude, 400.05766199658808, 0, -45);
-        } else {
-            console.log("默认中心点");
-            // 数据库： 113.36887409647213，23.155143504551752
-            this.updateMapCenter(113.36887409647213, 23.155143504551752, 400.05766199658808, 0, -90);
-        }
+        console.log('子组件');
+
         // this.doPartition()
 
 
@@ -1497,6 +1602,7 @@ export default {
     beforeUpdate() { }, //生命周期 - 更新之前
     updated() { }, //生命周期 - 更新之后
     beforeDestroy() {
+        this.clearAllPointAndLine()
         // observer.disconnect();
     }, //生命周期 - 销毁之前
     destroyed() { }, //生命周期 - 销毁完成
@@ -1517,13 +1623,24 @@ export default {
     height: 100%;
 }
 
-.icon-gudingshikou,
-.icon-shikou {
+.tooltip {
     position: absolute;
     top: 5px;
     left: 5px;
     z-index: 2000;
-    cursor: pointer;
     color: #818181;
+
+    .tooltip-text {
+        background: #818181;
+        padding: 5px 10px;
+        color: beige;
+
+    }
+}
+
+.icon-gudingshikou,
+.icon-shikou {
+    cursor: pointer;
+    margin-bottom: 2px
 }
 </style>

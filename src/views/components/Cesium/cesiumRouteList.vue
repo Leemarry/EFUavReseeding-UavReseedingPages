@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-12-01 16:44:32
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-11 16:54:09
+ * @LastEditTime: 2024-07-12 15:51:28
 -->
 <!-- 航线列表 -->
 <template>
@@ -55,8 +55,7 @@
                                 <span @click="openEdit(route)" :title="route.mid" v-else>{{ route.text ? route.text : route.mid }}</span>
                             </el-col>
                             <el-col :span="6">
-                                <!-- maploading -->
-                                <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机'" @click=" sendupload(route, 'drow')"></i>
+                                <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机'" @click=" maploading ? null : sendUploadToUav(route, 'drow')"></i>
                                 <!-- maploading ? null : -->
                                 <i class="iconfont  icon-baocun cursorStyle" :class="{ disabled: maploading }" :title="'保存航线'" @click="maploading ? null : sendsave(route)"></i>
                             </el-col>
@@ -87,7 +86,7 @@
                             </el-col>
                             <el-col :span="6">
                                 <div class="rightfloat">
-                                    <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机2'" @click="maploading ? null : sendupload(route, 'tasks')"></i>
+                                    <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机2'" @click="maploading ? null : sendUploadToUav(route, 'tasks')"></i>
                                     <i class="iconfont  icon-hangxianxinxi cursorStyle" :class="{ disabled: maploading }" :title="'解析航线'" @click="maploading ? null : readerkml(route, 'read')"></i>
                                     <!-- <el-popconfirm title="确定删除吗？">
                                         <i  slot="reference" class="iconfont icon-shanchu- cursorStyle" :title="'删除任务'" @click="maploading ? null : editRouteTask(route,'delet')"></i>
@@ -237,11 +236,6 @@ export default {
             return data
         },
         init() {
-            // document.addEventListener("getpositionsEvent", (event) => {
-            //     var mid = event.detail.mid;
-            //     var positions = event.detail.positions;
-            //     var unifiedHeight = event.detail.unifiedHeight;
-            // });
         },
         /**编辑航线名称（修改对应的manger的name */
         openEdit(route) {
@@ -256,7 +250,6 @@ export default {
         /**历史航线任务编辑 */
         openEditSqlRoute(route) {
             const name = '航线任务1-11'//time(Date.now());
-            console.log("设计双击双击");
             this.routeName = route.kmzName;
             this.$bus.$emit('send:editRoute', route)
         },
@@ -275,14 +268,13 @@ export default {
             this.$bus.$emit('send:choiseTime', [...this.choiseTime])
         },
         /**跨组件发送上传 */
-        sendupload(sendRoute, type) {
+        sendUploadToUav(sendRoute, type) {
 
             // drow // tasks        startTime:1,        endTime: 3,
             if (type === 'drow') {
                 sendRoute.startTime = this.startTime//  Number(this.startTime)
                 sendRoute.endTime = this.endTime// Number(this.endTime )
                 sendRoute.speed = this.slidervalue
-                console.log(sendRoute, 'sendRoute', type);
                 this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)
             } else {
                 this.$bus.$emit('send:uploadRouteTouav', sendRoute, type)

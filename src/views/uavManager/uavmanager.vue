@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-21 11:28:38
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-11 15:05:02
+ * @LastEditTime: 2024-07-12 20:11:44
 -->
 <!-- 无人机监控管理 -->
 <template>
@@ -540,7 +540,7 @@ export default {
                 console.error('控制台打印eror', error)
             }
         },
-        //    let WorkPointPositions=Object.assign([],this.geoCoordinates[0],this.defaultUavHeartbeat.altabs)
+
 
         /**下一作业 */
         async nextwork() {
@@ -1299,7 +1299,10 @@ export default {
         let key = "defaultUav-" + this.userId;
         this.defaultUavSn = localStorage.getItem(key)
         this.init();
-
+        const CesiumMap = this.$refs.CesiumMap;
+        if(CesiumMap){
+            this.$refs.CesiumMap.handleOperation();
+        }
     },
     beforeCreate() { }, //生命周期 - 创建之前
     beforeMount() { }, //生命周期 - 挂载之前

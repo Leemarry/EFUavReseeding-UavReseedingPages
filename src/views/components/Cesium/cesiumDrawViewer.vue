@@ -127,7 +127,7 @@ import GraphicType from "../../core/GraphicType";
 import { open } from "shapefile";
 import { moveDiv } from "../../core/utils";
 import $ from "jquery";
-import { checkComponent, checkViewer } from "../../core/utils";
+import { checkComponent, checkViewer,getPolygonArea } from "../../core/utils";
 /**航线列表管理 */
 import routeManager from "./cesiumRouteList.vue";
 let graphicManager = undefined;
@@ -138,8 +138,8 @@ export default {
     name: "cesiumDraw",
     data() {
         return {
+            /**航线列表*/
             routes: [],
-            getpositionslist: [],
             visible: true,
             editMode: false,
             graphicType: undefined,
@@ -225,12 +225,6 @@ export default {
         },
     },
     props: {
-        // tasksRoutes: {
-        //     default: function () {
-        //         return [];
-        //     },
-        //     type: Array,
-        // },
         attachment: undefined,
         extendMarkerImage: {
             type: Array,
@@ -355,7 +349,6 @@ export default {
         },
         getpositionsEvent(e) {
             const self = this;
-            console.log('getpositionsEvent0', e);
             if (
                 graphicManager.has(e.detail.mid) ||
                 self.$refs.markerManager.has(e.detail.mid)
@@ -364,14 +357,14 @@ export default {
                 var positions = e.detail.positions;
                 var unifiedHeight = e.detail.unifiedHeight;
                 var text = e.detail.text
-                this.getpositionslist = e.detail.positions;
+                var spacing = e.detail.spacing
                 // 查找要修改的对象
                 const index = this.routes.findIndex((item) => {
                     return item.mid == mid;
                 });
                 if (index < 0) {
                     // 将 mid 和 positions 添加到 routes 数组的头部
-                    this.routes.unshift({ mid, positions, unifiedHeight, text, edit: false });
+                    this.routes.unshift({ mid, positions, unifiedHeight, text, edit: false ,spacing });
                     // 存储 到store 点经纬度数组
                 } else {
                     this.routes.splice(index, 1, {
@@ -379,10 +372,10 @@ export default {
                         positions,
                         unifiedHeight,
                         text,
-                        edit: false
+                        edit: false,
+                        spacing
                     });
                 }
-                // self.$refs.markerManager.createLabelAndaddMarker(e.detail.positions,e.detail.options,e.detail.markerid) //生成点
             }
         },
         /**组件传递信息-- edit:true */
@@ -444,7 +437,7 @@ export default {
             self.menuSelected = {};
             self.editMode = false;
             self.cesiumViewer.scene.globe.depthTestAgainstTerrain =
-                self._depthTestAgainstTerrain;
+            self._depthTestAgainstTerrain;
 
         },
         startEdit(e) {
@@ -533,6 +526,9 @@ export default {
             checkComponent(this);
             //三维坐标数组
             this.$refs.layerManager.editInsertLayer(type, id, positions);
+            // 发给父组件
+            const area = getPolygonArea(positions);
+            this.$emit('sendAreaText', area);
         },
         modelThumb(item) {
             if (item.thumb) {
@@ -870,6 +866,7 @@ export default {
          * @param {*} id  多边形面积
          * @param {*} positions 点数组
          * @param {*} hfDistance   间据（航之间间距）
+         * @param {*} headingDistance  航向间距
          * @param {*} unifiedHeight  高度
          * @param {*} text  名称
          * @return {*}

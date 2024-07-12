@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-23 19:08:24
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-11 13:51:38
+ * @LastEditTime: 2024-07-12 19:23:51
 -->
 <!--  -->
 <template>
@@ -605,7 +605,7 @@ export default {
             const dateId = Date.now();
             const mid = dateId;
             const unifiedHeight = null;
-            var geoCoordinates = this.resultArray.map(coord => {
+            var geo= this.resultArray.map(coord => {
                 let values = new Array(3);
                 values[0] = coord[0]; // 航线经度
                 values[1] = coord[1]; // 航纬度
@@ -615,8 +615,8 @@ export default {
                     values[2] = coord[2];
                 }
                 return values;
-            }); // [coord[0], coord[1], 20]
-            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates, unifiedHeight, }); // 存储store
+            }); 
+            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates:geo, unifiedHeight, }); // 存储store
 
             if (showMsg) {
                 console.log('已保存');
@@ -626,7 +626,7 @@ export default {
         saveRouteData(showMsg) {
             /**数据处理*/
             // [[113.36887409647213,23.155143504551752,19.00895890982441],[113.36887409647213,23.155143504551752,19.00895890982441]] 
-            var geoCoordinates = this.choosePointlist.map((obj) => {
+            var geo = this.choosePointlist.map((obj) => {
                 let values = new Array(3);
                 values[0] = obj.lng; // 航线经度
                 values[1] = obj.lat; // 航纬度
@@ -640,7 +640,7 @@ export default {
             const dateId = Date.now();
             const mid = dateId;
             const unifiedHeight = null;
-            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates, unifiedHeight, }); // 存储store
+            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates:geo, unifiedHeight, }); // 存储store
             if (showMsg) {
                 this.showToast('已保存')
             }

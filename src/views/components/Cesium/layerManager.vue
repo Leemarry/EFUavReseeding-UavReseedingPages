@@ -300,7 +300,6 @@ export default {
         renameAction(data) {
             data.edit = false;
             this.$emit("rename", data.id, this.newName);  // 父：cesiumDrawViewer改  我还有改一下routes的text
-
             data.text = this.newName;
         },
         /**计算绘制间距航线 */

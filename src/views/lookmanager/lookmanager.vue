@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-12-05 14:13:39
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-08 18:19:59
+ * @LastEditTime: 2024-07-12 20:10:42
 -->
 <!-- 识别 tester   10010 -->
 <template>
@@ -899,8 +899,10 @@ export default {
         this.init();
         /**页面拉伸 */
         this.handleResize()
-
-
+        const CesiumMap = this.$refs.CesiumMap;
+        if(CesiumMap){
+            this.$refs.CesiumMap.handleOperation();
+        }
 
     },
     beforeCreate() { }, //生命周期 - 创建之前

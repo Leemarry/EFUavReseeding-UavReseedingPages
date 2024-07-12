@@ -3,8 +3,8 @@
  * @version: 
  * @Author: Eugene
  * @Date: 2023-11-13 10:49:39
- * @LastEditors: Andy
- * @LastEditTime: 2024-04-24 13:53:08
+ * @LastEditors: likai 2806699104@qq.com
+ * @LastEditTime: 2024-07-12 19:18:54
  */
 const getters = {
     sidebar: state => state.app.sidebar,
@@ -52,6 +52,7 @@ const getters = {
     currentMidUnifiedHeight: state => state.routeData.unifiedHeight,
     positions: state => state.routeData.positions,
     geoCoordinates: state => state.routeData.geoCoordinates,
+    
     /**当前作业点 */
     currentWorkPoint:state=>state.routeData.currentWorkPoint,
     sliderValueObj:state=>state.publicData.sliderValueObj,
