@@ -189,7 +189,8 @@
                                     <span>{{this.whetherToLockTheViewport ? '已锁定' :'锁定视口' }}</span>
                                 </div>
                             </div>
-                        </div> -->
+                        </div> --> 
+                        <!-- ref="CesiumMap"  -->
                         <!--    <VideoModule ref="VideoModule" @send:switchMapOrVideo="switchMapOrVideo" :defaultUavInfo="defaultUavInfo"></VideoModule> -->
                         <CesiumMap ref="CesiumMap" :visible="CesiumDrawVisible" :maploading="maploading" :tasksRoutes="tasksRoutes" :tasksName="tasksName" :defaultUavSn="defaultUavSn" @senddoFlyCommands='senddoFlyCommandsEvent'></CesiumMap>
                         <div class="drawButton" v-show="isMap">

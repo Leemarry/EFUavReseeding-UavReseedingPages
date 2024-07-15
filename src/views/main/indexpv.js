@@ -691,31 +691,6 @@ export default {
         });
       }
     },
-
-
-    async changeHive(hiveId) {
-      this.defaultHiveId = hiveId;
-      let url = '';
-      let streamTypeEditor = 'webrtc';
-      let hiveName = hiveId;
-      if (this.hives && this.hives.length > 0) {
-        let indexHive = this.hives.findIndex(x => x.hiveId === hiveId);
-        if (indexHive >= 0) {
-          hiveName = this.hives[indexHive].hiveName;
-          url = this.hives[indexHive].playUrl;
-          streamTypeEditor = this.hives[indexHive].streamType;
-        }
-      }
-      this.$nextTick(() => {
-        let hiveVideoView = this.$refs.hiveVideoView;
-        if (hiveVideoView != null) {
-          hiveVideoView.changeUav(hiveId, hiveName, url, streamTypeEditor);
-          setTimeout(() => {
-            hiveVideoView.play();
-          }, 2000)
-        }
-      });
-    },
     async changeUav(sn) {
       this.refreshUavHeart(null);
       this.isCanOpterUav = false;
@@ -1884,8 +1859,6 @@ export default {
       if (type === 'tasks') {
         this.uploadTaskToUav(route, this.defaultUavSn)
       } else if (type === 'drow') {
-        const { mid, positions, unifiedHeight, text , startTime ,endTime ,speed } = route
-        this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: positions, unifiedHeight }); // 存储store
         this.uploadMission(route, this.defaultUavSn)
       }
     },
@@ -1913,6 +1886,8 @@ export default {
         await this.$store.dispatch("uavs/uploadMission", data).then((response) => {
           const { code, message, data } = response;
           if (code === 1) {
+            const { mid, positions, unifiedHeight, text , startTime ,endTime ,speed } = route
+            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: positions, unifiedHeight }); // 存储store
             this.showMessage(message, "success");
           } else {
             this.showMessage(message, "warning");

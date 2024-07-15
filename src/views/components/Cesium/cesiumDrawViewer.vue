@@ -128,6 +128,7 @@ import { open } from "shapefile";
 import { moveDiv } from "../../core/utils";
 import $ from "jquery";
 import { checkComponent, checkViewer,getPolygonArea } from "../../core/utils";
+import { mapGetters } from "vuex";
 /**航线列表管理 */
 import routeManager from "./cesiumRouteList.vue";
 let graphicManager = undefined;
@@ -223,7 +224,11 @@ export default {
         defaultImage() {
             return 'this.src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB1UlEQVQ4T6XTMWgUQRQG4P/N3gaRSBpBEAMqrldkYyXu5VCMChZBEDxOsDIgKKSyECxTWERIYe2hRdoLeKV2RhCymwhy3E48b087C7EQtRDj7vyyg3dKDGyI087MN/97MyP4zyFF+5vNpnPEP3neZGlNlFwBoU/53rnBvn+AsPP+AFRWgUFNKVwgcVCAp4C0lJu10lTNiTGdYLLcyhF52e3uG8lUDVRnDXhagEP5YkM2pia9la0Jw413nhhzKfC9BxaI4t4aII3A9x6FcXJbBGNFZQ3jG3Yk0snjYMK7EelkHsBGMOEt7xSI4oQSxr3lin+8ngPG4MV2sQdgGPdvCviQkFsV/1jDAmu6f6c0wqWfm5grAiKd1EE0IbiaJ7VApN+egcF+KHWiCNhamgVekW4a9xdE4dsAeK716F7jLkJUNXOzmWq5/GG7vlggn4ji5BkEqzngQDYpXARQtdcErKRje2aq4+PfbaOJKcC5G/hH20NgPU7uU/AjJT47wD0Ao3+fSMgTBXwlOPvnBcoSweu/E/SuUdRFQ7YdwD6QopEnIzBtgfV2t8ySM5sSH3cF2D7oZD4jvpSAy0Wn5/MEPgGoDz/T6us3hx231KVgYSeAbTAx/Qs/Rdq4fXky6QAAAABJRU5ErkJggg=="';
         },
+        ...mapGetters([
+            "defaultUavHeartbeat"
+        ]),
     },
+
     props: {
         attachment: undefined,
         extendMarkerImage: {
@@ -264,8 +269,7 @@ export default {
     },
     //生命周期 - 创建完成（可以访问当前this实例）
     created() {
-        console.log("parent", this.$attrs, this.$listeners);
-
+        // console.log("parent", this.$attrs, this.$listeners);
     },
     mounted() {
         window.jq = $;
@@ -426,6 +430,8 @@ export default {
                 graphicManager.has(e.detail.mid) ||
                 self.$refs.markerManager.has(e.detail.mid)
             ) {
+                console.log('结束positions',  e.detail.positions);
+                
                 self.editpushLayerManaer(
                     e.detail.type,
                     e.detail.mid,
@@ -526,8 +532,8 @@ export default {
             checkComponent(this);
             //三维坐标数组
             this.$refs.layerManager.editInsertLayer(type, id, positions);
-            // 发给父组件
-            const area = getPolygonArea(positions);
+            // 将面积发给父组件
+            const area = getPolygonArea(positions); // 计算面积
             this.$emit('sendAreaText', area);
         },
         modelThumb(item) {
@@ -874,7 +880,12 @@ export default {
         drowrouteGraphic(id, positions, hfDistance, headingDistance, unifiedHeight, text) {
             checkComponent(this);
             this.deletelineGraphic(id);
-            graphicManager.beginCalc(id, positions, hfDistance, headingDistance, unifiedHeight, text);
+            // graphicManager.beginCalc(id, positions, hfDistance, headingDistance, unifiedHeight, text);
+
+            const parameters=  {hfDistance, headingDistance, unifiedHeight, text}
+            let longitude = this.defaultUavHeartbeat.lng || 113.36693330994926 ;
+            let latitude = this.defaultUavHeartbeat.lat || 23.156426785188327;
+            graphicManager.beforeBeginCalc(id, positions,parameters , [longitude, latitude]  );
 
             /**
              *

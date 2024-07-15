@@ -122,15 +122,6 @@ function dropRoute(id) {
 
 }
 export default {
-    //     inject: {
-    //         sliderValueObj: {
-    //       from: 'sliderValueObj',
-    //       default: () => {
-    //         spacing:100;headingSpacing:100;flyalt:100;
-    //       }
-    //     }
-    //   },
-
     data() {
         return {
             mouseDown: false,
@@ -209,29 +200,19 @@ export default {
             //   }
             // }
         },
-        /**通过相机参数 计算获取的高度与间距 */
-        // SliderValueObj:{
-        //     type:Object,
-        //     default : function(){
-        //         return {
-        //             heightSliderValue: 20,
-        //             distanceSliderValue:44,
-        //         }
-        //     }
-        // }
     },
     watch: {
         'sliderValueObj': {
             deep: true,
             immediate: true, //立即执行
             handler(newVal, oldVal) {
-                console.log('sliderValueObj立即执行', newVal);
+                console.log('sliderValueOj立即执行', newVal);
             }
         }
 
     },
     mounted() {
-        // console.log('sliderValueObj',this.sliderValueObj);
+
     },
     computed: {
         ...mapGetters([
@@ -291,8 +272,7 @@ export default {
             }
             const selectedNode = this.findNodeById(data.id, this.json);
             if (selectedNode != null) {
-                // console.log("只在松开鼠标后触发");
-                console.log('只在松开鼠标后触发', selectedNode); // 输出选中节点的 JSON 数据 父节点数据  -- position  id
+                // console.log('只在松开鼠标后触发', selectedNode); // 输出选中节点的 JSON 数据 父节点数据  -- position  id
                 this.beginCalcroute(selectedNode);  //  绘制间距 使用多边形角点 绘制航线
             }
         },
@@ -413,7 +393,7 @@ export default {
                 const treeHeightSlider = {
                     id: id + "-height", //+ "-height"
                     slidershow: true,
-                    sliderValue: parseFloat(this.sliderValueObj.flyalt) || 20,  // 设置计算后的 高度
+                    sliderValue: parseFloat(this.sliderValueObj.flyalt) || 40,  // 设置计算后的 高度
                     sliderLable: '高度',
                     sliderTitle: '',
                 };

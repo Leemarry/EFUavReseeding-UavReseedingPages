@@ -608,7 +608,6 @@ class CesiumPolyline extends BaseGraphic {
   }
   stopEdit() {
     if (this.graphic instanceof Cesium.Entity) {
-      console.log(this.positions);
       this.graphic.polyline.positions = this.positions;
       // this.graphic.polyline.material = this.options.polyline.material
     }

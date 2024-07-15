@@ -618,7 +618,7 @@ export default {
             }
         },
         /** 处理父组件下发的操作 */
-        handleOperation(operation, data) {
+        handleOperation() {
             // 是否是主界面
             if (this.geoCoordinates.length > 0) {
                 console.log("规划中心点");
@@ -635,8 +635,8 @@ export default {
                 this.updateMapCenter(113.36887409647213, 23.155143504551752, 400.05766199658808, 0, -90);
             }
         },
-        handleOperation2(){
-           if (this.defaultUavHeartbeat && this.defaultUavHeartbeat.lng !== 0 && this.defaultUavHeartbeat.lng !== 0) {
+        handleOperation2() {
+            if (this.defaultUavHeartbeat && this.defaultUavHeartbeat.lng !== 0 && this.defaultUavHeartbeat.lng !== 0) {
                 console.log("无人机中心点");
                 let longitude = this.defaultUavHeartbeat.lng
                 let latitude = this.defaultUavHeartbeat.lat;
@@ -775,7 +775,6 @@ export default {
             // 添加航点
             window.viewer.scene.globe.depthTestAgainstTerrain = false;
             for (let i = 0; i < PositionsList.length; i++) {
-                console.log('绘制航点', i);
 
                 const currentCorlor = i == 0 ? startColor : endColor; //Cesium.Color.YELLOW;
                 var Position = PositionsList[i];
@@ -822,65 +821,50 @@ export default {
         },
         /**将所有实体点颜色修改 */
         async updatePointsColor(colorPoints, indexArr) {
-            // console.log('colorPoints', colorPoints, indexArr);
-            // const startColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3) // #9EE8E7
-            // const endColor = new Cesium.Color.fromCssColorString('#9EE8E7').withAlpha(0.3)
-            // const color = Cesium.Color.BLUE
-            // const lineColor = new Cesium.Color.fromCssColorString('#E6E6E6').withAlpha(0.3) // #9EE8E7
-            // let viewer = window.viewer;
-            // var radar = viewer.entities.getById('storePoint' + 0);
-            // if (radar !== undefined) {
-            //     var position = radar.position.getValue(Cesium.JulianDate.now());
-            //     console.log('position', position, radar.position._value);
-            // }
-            // 获取所有实体的数组
-            // var entities = viewer.entities.values;
-            // var radar = viewer.entities.getById('radar')
-            // 遍历数组，移除所有非 this.vehicleEntity 的实体
-            // 遍历数组，移除所有 id 中包含 "hang" 的实体
-
-            // var waypoints = [];
-            // if(!colorPoints || colorPoints.length  ==0){
-            //     return false;
-            // }
-            // for (let i = 0; i < colorPoints.length; i++) {
-            //     var Position = colorPoints[i];
-            //     var longitude = Position[0];
-            //     var latitude = Position[1];
-            //     var height = null;
-            //     var position = Cesium.Cartographic.fromDegrees(longitude, latitude);
-            //     var updatedPositions = await Cesium.sampleTerrainMostDetailed(
-            //         this.terrainProvider,
-            //         [position]
-            //     );
-            //     // console.log('高度高度',updatedPositions,Position,position);
-            //     height = updatedPositions[0].height + 10;
-            //     var altitude = height; // 指定航点的高度
-            //     var newPosition = Cesium.Cartesian3.fromDegrees(
-            //         longitude,
-            //         latitude,
-            //         altitude
-            //     );
-
-            //     waypoints.push(newPosition);
-
-            // }
-            // this.clearOnlyLines()
+            const defaultStartColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3) // #9EE8E7
+            const startColor = new Cesium.Color.fromCssColorString('#009DFF') // #9EE8E7
+            const endColor = new Cesium.Color.fromCssColorString('#9EE8E7').withAlpha(0.3)
+            const color = Cesium.Color.BLUE
+            const lineColor = new Cesium.Color.fromCssColorString('#00FF00').withAlpha(0.9) // #9EE8E7
+            let viewer = window.viewer;
+            var waypoints = [];
+            var entities = viewer.entities.values;
+            for (var i = 0; i < entities.length; i++) {
+                if (
+                    entities[i].id &&
+                    (entities[i].id.indexOf("storePoint") !== -1 ||
+                        entities[i].id.startsWith("storePoint"))
+                ) {
+                    console.log(' entities[i]', entities[i].id); // id : storePoint_0
+                    entities[i].point.color =endColor;
+                }
+            }
+            for (let index = 0; index < indexArr.length; index++) {
+                const PointId = 'storePoint' + indexArr[index]; //id: "storePoint" + i
+                var radar = viewer.entities.getById(PointId);
+                if (radar !== undefined) {
+                    var position = radar.position.getValue(Cesium.JulianDate.now());
+                    if(index === 0){
+                        radar.point.color = startColor;
+                    }else{
+                    radar.point.color = Cesium.Color.RED;
+                    }
+                    waypoints.push(position);
+                }
+            }
+            this.clearOnlyLines()
             // // 添加航线
-            // var redLine = viewer.entities.add({
-            //     id: "storePolyline",
-            //     name: "绘制上传的航线",
-            //     polyline: {
-            //         positions: waypoints,
-            //         width: 3,
-            //         material: lineColor,//  Cesium.Color.RED,
-            //         granularity: 0.03
-            //     }
-            // });
+            var redLine = viewer.entities.add({
+                id: "storePolyline",
+                name: "绘制上传的航线",
+                polyline: {
+                    positions: waypoints,
+                    width: 3,
+                    material: lineColor,//  Cesium.Color.RED,
+                    granularity: 0.03
+                }
+            });
         },
-
-
-
         clearOnlyLines() {
             let viewer = window.viewer;
             viewer.entities.removeById("storePolyline");

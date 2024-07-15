@@ -329,7 +329,7 @@
 //例如：import 《组件名称》 from '《组件路径》';
 import { mapGetters } from 'vuex'
 import cameraSeeting from "../cameraSetting/cameraSeeting";
-import cameraWebWorker from "../cameraSetting/camera.worker"
+// import cameraWebWorker from "../cameraSetting/camera.worker"
 import cameraParams from "../cameraSetting/cameraParam";
 
 import MappingUtil from "../cameraSetting/MappingUtil"; // 引入 MappingUtil 类
@@ -465,23 +465,23 @@ export default {
 
         },
 
-        createWebWorker(options) {
-            this.webworker = new cameraWebWorker()
-            this.webworker.onmessage = (event) => {
-                let values = event.data;
-                this.spacing = (values[0] * 100).toFixed(2);
-                this.headingSpacing = (values[1] * 100).toFixed(2);
-                this.flyalt = (values[2] * 100).toFixed(2)
-                /**节流器 */
-                this.sendSliderValue(this.spacing, this.headingSpacing, this.flyalt)
-                // 关闭 Web Worker 线程
-                this.webworker.terminate();
-                this.webworker = null;
-            }
-            // 
-            this.webworker.postMessage(options)
+        // createWebWorker(options) {
+        //     this.webworker = new cameraWebWorker()
+        //     this.webworker.onmessage = (event) => {
+        //         let values = event.data;
+        //         this.spacing = (values[0] * 100).toFixed(2);
+        //         this.headingSpacing = (values[1] * 100).toFixed(2);
+        //         this.flyalt = (values[2] * 100).toFixed(2)
+        //         /**节流器 */
+        //         this.sendSliderValue(this.spacing, this.headingSpacing, this.flyalt)
+        //         // 关闭 Web Worker 线程
+        //         this.webworker.terminate();
+        //         this.webworker = null;
+        //     }
+        //     // 
+        //     this.webworker.postMessage(options)
 
-        },
+        // },
         /**input间距信息查询 */
         async MappingUtil() {
             try {

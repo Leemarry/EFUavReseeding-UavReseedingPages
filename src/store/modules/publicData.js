@@ -3,8 +3,8 @@
  * @version: 
  * @Author: Eugene
  * @Date: 2023-12-06 09:17:59
- * @LastEditors: Andy
- * @LastEditTime: 2023-12-25 13:27:08
+ * @LastEditors: likai 2806699104@qq.com
+ * @LastEditTime: 2024-07-15 08:59:01
  */
 const state = {
   name: 'socketData公用数据',
@@ -23,9 +23,9 @@ const state = {
   uavId: null,
   /**接收航线间距，航向间距，高度 */
   sliderValueObj: {
-    spacing: 100,
-    headingSpacing: 100,
-    flyalt: 100
+    spacing: 20,
+    headingSpacing: 20,
+    flyalt: 50
   }
 
 };

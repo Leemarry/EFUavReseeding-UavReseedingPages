@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-23 19:08:24
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-12 20:09:43
+ * @LastEditTime: 2024-07-15 17:05:15
 -->
 <!--  -->
 <template>
@@ -477,7 +477,7 @@ export default {
             choosePointlist: [], // 选中的点列表
             lineList: [], // 线列表
             chooseLinelist: [], // 选中的线列表
-            pointMap:new Map(),
+            pointMap: new Map(),
             btnloading: false,
             fileList: [],
             isIndeterminate: true,
@@ -553,13 +553,32 @@ export default {
             }
             const colorPoints = this.pointToRoute(newVal)  // 需要将选中的点高亮
             // 将选中索引设置高亮
-            // this.updatePointsColor(colorPoints, indexArr)
+            this.$refs.CesiumMap.updatePointsColor(colorPoints, indexArr)
         },
         chooseLinelist: {
             handler(newVal, oldVal) {
+                // 获取newVal 每一个的索引 也就是 setMap 的key
+                const indexArr = []
+                for (let i = 0; i < newVal.length; i++) {
+                    const  index = this.lineList.findIndex(item => item.id === newVal[i].id)
+                    if(index >= 0){
+                        indexArr.push(index*2)
+                        indexArr.push(index*2+1)
+                    }
+                }
                 const colorPoints = this.lineToRoute(newVal) // 需要将选中的点高亮并连接线
+                //  this.lineList
+                const setMap = new Map();
+                for (let index = 0; index < newVal.length; index++) {
+                    const element = newVal[index];
+                    const i = index * 2;
+                    setMap.set(i, element.id);
+                    setMap.set(i + 1, element.id);
+                }
                 // 将选中索引设置高亮
-                this.updatePointsColor(colorPoints, indexArr)
+                console.log('indexArr',indexArr);
+                
+                this.$refs.CesiumMap.updatePointsColor(colorPoints, indexArr)
             },
             deep: true // 深度监听对象数组的变化  
         }
@@ -574,18 +593,14 @@ export default {
         /**绘制航线 */
         drawLines(positions, type = this.currentType) {
             console.log('');
-            
+
             this.$refs.CesiumMap.drawLines(positions);
         },
         drawPoints(positions) {
             this.$refs.CesiumMap.drawPoints(positions);
         },
-        /** */
-        updatePointsColor(colorPoints, indexArr) {
-            this.$refs.CesiumMap.updatePointsColor(colorPoints, indexArr)
-        },
-        sendEntityMap(entityMap,viewer){
-            console.log('entityMap',entityMap,viewer);
+        sendEntityMap(entityMap, viewer) {
+            console.log('entityMap', entityMap, viewer);
         },
         /**后端返回数据 */
         respondRouteInfo(newVal) {
@@ -613,13 +628,6 @@ export default {
                 [item.offlng, item.offlat, item.offalt] // 终点  
             ]);
             this.resultArray = result
-
-            const setMap = new Map();
-            for (let index = 0; index < newVal.length; index++) {
-                const element = newVal[index];
-                setMap.set('continuous-on-' + element.id, [element.onlng, element.onlat, element.onalt]);
-                setMap.set('continuous-off-' + element.id, [element.offlng, element.offlat, element.offalt]);
-            }
             return result || []
         },
         /** 用于切换 绘制所有的点 */
@@ -651,7 +659,7 @@ export default {
                 }
                 return values;
             });
-            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates:geo, unifiedHeight, }); // 存储store
+            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: geo, unifiedHeight, }); // 存储store
             if (showMsg) {
                 this.showToast('已保存')
             }
@@ -673,7 +681,7 @@ export default {
             const dateId = Date.now();
             const mid = dateId;
             const unifiedHeight = null;
-            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates:geo, unifiedHeight, }); // 存储store
+            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: geo, unifiedHeight, }); // 存储store
             if (showMsg) {
                 this.showToast('已保存')
             }
@@ -712,6 +720,7 @@ export default {
             this.queryLineList(latestHandleId)
             this.currentHandleId = latestHandleId
             this.choosePointlist = []
+            this.chooseLinelist = []
         },
         /**查询处理列表 ✓ */
         async queryHandle() {
@@ -739,7 +748,6 @@ export default {
                 this.leftloading = false;
             }
         },
-
         /**作业地块 */
         async queryBlockList(id) {
             this.centerloading = true;
@@ -815,8 +823,6 @@ export default {
             }
 
         },
-
-
         //#endregion
         // 切换
         //#region ----------------------------------------------------------------------切换----------------------------------------------------------------------------------
@@ -1522,9 +1528,9 @@ export default {
         this.defaultUavSn = localStorage.getItem(key)
         this.createSse() // 看不
         await this.queryNewInfo();
-        this.queryAllUavs(); 
+        this.queryAllUavs();
         const CesiumMap = this.$refs.CesiumMap;
-        if(CesiumMap){
+        if (CesiumMap) {
             this.$refs.CesiumMap.handleOperation2();
         }
 
