@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-12-05 14:13:39
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-12 20:10:42
+ * @LastEditTime: 2024-07-29 10:43:32
 -->
 <!-- 识别 tester   10010 -->
 <template>
@@ -27,7 +27,7 @@
                 <div>空斑识别结果</div>
             </div>
             <div class="result-image">
-                <el-image style="width: 100%; height: 100% ;overflow: auto; " v-for="(url,index) in defaultUavResultImageData.imgarray" :key="index" :src="url" fit="cover" :preview-src-list="defaultUavResultImageData.imgarray">
+                <el-image style="width: 100%; height: 100% ;overflow: auto; " v-for="(url,index) in defaultUavResultImageData.base64array" :key="index" :src="url" fit="cover" :preview-src-list="defaultUavResultImageData.base64array">
                 </el-image>
             </div>
         </div>
@@ -50,7 +50,7 @@
                 </el-select>
             </div>
             <div class="result-image">
-                <el-image style="width: 100%; height: 100% ;overflow: auto; " v-for="(url,index) in defaultUavImageData.imgarray" :key="index" :src="url" fit="cover" :preview-src-list="defaultUavImageData.imgarray">
+                <el-image style="width: 100%; height: 100% ;overflow: auto; " v-for="(url,index) in defaultUavImageData.base64array" :key="index" :src="url" fit="cover" :preview-src-list="defaultUavImageData.base64array">
                 </el-image>
             </div>
         </div>
@@ -58,7 +58,6 @@
             <div class="table-list-info">
                 <!-- :row-class-name="tableRowClassName" -->
                 <el-table :data="defaultUavResultImageData.array" stripe>
-
                     <el-table-column label="时间">
                         <template slot-scope="scope">
                             <span>{{parseTime(scope.row.time)}}</span>
@@ -115,6 +114,7 @@ export default {
             visible: false,
             defaultUavResultImageData: {},
             defaultUavImageData: {},
+            // 分析结构
             ceshi: {
                 "uavId": "1ZNBJ5F00C008L",
                 "array": [

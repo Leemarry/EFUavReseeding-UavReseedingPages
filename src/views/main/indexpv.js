@@ -9,10 +9,7 @@ import op from '../components/Cesium/drowcesium.vue'
 import cameraSettingsPopup from '../components/cameraSettingsPopup.vue'
 import { Attitude, Heading } from "vue-flight-indicators";
 import { removeToken } from "@/utils/auth";
-
 import { getDefaultObj, getDefaultData, switchNode, time, getTimeRange, getTimeRangeByKey, timeRangeMap, sortDataByPrefix } from "@/utils/currency"
-
-
 import { resetRouter } from "@/router";
 import scrollbar from '@/views/components/scrollbar/scrollbar'
 import {
@@ -59,6 +56,11 @@ export default {
   data() {
     const self = this
     return {
+      readKmzinfo:{
+        positions:[],
+        mid:[],
+        unifiedHeight:30
+      },
       uploadUavVisible: false,
       kmzCurrentIndex: 0,
       copyText: 'a copy',
@@ -255,6 +257,7 @@ export default {
       isDialogKmz: false,
       loadingKmz: false,
       kmzFileList: [],
+      fileList: [],
       // 键盘控制
       lastPressKeyCode: 0,
       isKeyboardKeydown: false,
@@ -403,8 +406,8 @@ export default {
     this.startDataCheckTimer(); // 在组件被挂载后启动检查数据定时器
     // this.startTimeoutCheckTimer(); // 在组件被挂载后启动超时提示定时器
     const CesiumMap = this.$refs.CesiumMap;
-    if(CesiumMap){
-        this.$refs.CesiumMap.handleOperation();
+    if (CesiumMap) {
+      this.$refs.CesiumMap.handleOperation();
     }
   },
   // created() {},
@@ -678,6 +681,92 @@ export default {
     },
 
     //#endregion 
+    openFileDialog() {
+      //打开弹窗
+      this.fileList = []
+      const fileDialogEle = document.getElementById('fileDialog')
+      fileDialogEle.style.display = 'block'
+    },
+    closeFileDialog(event) {
+      let that = this;
+      if (event.target.id === 'fileDialog') {
+        console.log('关闭弹窗');
+      }
+      var close = document.getElementById('close-button');
+      var div = document.getElementById('fileDialog');
+      close.onclick = function close() {
+        div.style.display = "none";
+      }
+      window.onclick = function close(e) {
+        if (e.target == div) {
+          div.style.display = "none";
+        }
+      }
+    },
+    /**取消确认-关闭弹窗 */
+    canlceHandle() {
+      const div = document.getElementById('fileDialog');
+      div.style.display = 'none';
+    },
+    /**弹窗确定提交 */
+
+    changeFile(file, fileList) {
+      this.fileList = [];
+      let fileName = file.name;
+      let size = file.size;
+      fileName = fileName.substring(fileName.lastIndexOf('.'))
+      const isKmz = fileName === '.kmz'; // ||'.kml'
+      const isLt2M = file.size / 1024 / 1024 < 50;
+      if (!isKmz) {
+        this.showToast('上传航线文件只能是 kmz 格式!');
+      }
+      if (!isLt2M) {
+        this.showToast('上传航线文件不能超过 50MB!');
+      }
+      if (isKmz && isLt2M) {
+        this.fileList.push(file);
+      }
+    },
+    fileSubmit() {
+      this.maploading = true
+      const file = this.fileList[0] || null;
+      const handleDate = (new Date()).getTime(); // 439c-1711335601702-53646
+      const handleUuid = this.generateId(handleDate);
+      let formData = new FormData()
+      formData.append('handleUuid', handleUuid) // 额外参数 
+      formData.append('file', file.raw)
+      formData.append('handleDate', handleDate)
+      this.$store.dispatch('uavs/uploadKmz', formData).then(res => {
+        if (res.code === 1) {
+          this.showMessage('上传成功', 'success')
+        } else {
+          this.showMessage(res.message, 'error')
+        }
+        this.fileList = [];
+        //   this.showMessage('上传成功', 'success')
+      }).catch(err => {
+        this.showMessage(err, 'error')
+      }).finally(() => {
+        this.maploading = false
+      })
+
+    },
+    generateId(HandleDate) {
+      return (Math.random() * 10000000).toString(16).substr(0, 4) + '-' + HandleDate + '-' + Math.random().toString().substr(2, 5);
+  },
+    handleRemove(file, fileList) {
+      this.fileList = []
+    },
+    handlePreview(file) {
+      console.log(file, 'file');
+    },
+    handleExceed(files, fileList) {
+      this.$message.warning(`当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+    },
+    beforeRemove(file, fileList) {
+      return this.$confirm(`确定移除 ${file.name}？`);
+    },
+
 
     //#region -------------------------------------------------无用-----------------------------------------------------------
     switchVideoCount(count) {
@@ -1862,9 +1951,6 @@ export default {
         this.uploadMission(route, this.defaultUavSn)
       }
     },
-
-
-
     /**上传航线值无人机 */
     async uploadMission(route, uavId = this.defaultUavSn) {
       try {
@@ -1873,20 +1959,19 @@ export default {
           altType: 0,
           takeoffAlt: route.unifiedHeight, //unifiedHeight
           homeAlt: 30, // 如果不需要传递homeAlt，可以设置为null
-          startTime:route.startTime,
-          endTime:route.endTime,
-          speed:route.speed,
+          startTime: route.startTime,
+          endTime: route.endTime,
+          speed: route.speed,
           spacing: route.spacing || 2,
         };
         const data = {
           'mission': route.positions,
           'formdata': parms,
         };
-
         await this.$store.dispatch("uavs/uploadMission", data).then((response) => {
           const { code, message, data } = response;
           if (code === 1) {
-            const { mid, positions, unifiedHeight, text , startTime ,endTime ,speed } = route
+            const { mid, positions, unifiedHeight, text, startTime, endTime, speed } = route
             this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: positions, unifiedHeight }); // 存储store
             this.showMessage(message, "success");
           } else {
@@ -1954,6 +2039,10 @@ export default {
             const unifiedHeight = data.unifiedHeight
             let CesiumMap = this.$refs.CesiumMap;
             if (CesiumMap) {
+              this.readKmzinfo.mid = mid;
+              this.readKmzinfo.positions = positions;
+              this.readKmzinfo.unifiedHeight = unifiedHeight;
+              this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: positions, unifiedHeight });
               this.$refs.CesiumMap.drawLines(positions);
             }
           } else {
@@ -1985,8 +2074,8 @@ export default {
         homeAlt: 30, // 如果不需要传递homeAlt，可以设置为null
         name: name,
         speed: speed,
-        startTime : route.startTime,
-        endTime : route.endTime
+        startTime: route.startTime,
+        endTime: route.endTime
 
       };
       const data = {
@@ -2021,10 +2110,10 @@ export default {
         await this.$store.dispatch("uavs/queryKmzInfo", formdata).then(response => {
           const { code, message, data } = response;
           if (code === 1) {
-            // this.tasksRoutes = data || []; // 返回数据
+            this.tasksRoutes = data || []; // 返回数据
 
-            const dataCopy = data.slice() || [];
-            this.tasksRoutes = sortDataByPrefix(dataCopy);
+            // const dataCopy = data.slice() || [];
+            // this.tasksRoutes = sortDataByPrefix(dataCopy);
             // this.tasksRoutes.sort(customSort);
 
           } else {

@@ -75,16 +75,7 @@ export const constantRoutes = [{
     //     name: "so"
     // },
     // {
-    //     path: "/jsresize",
-    //     component: () =>
-    //         import ('@/views/lookmanager/jsresize.vue'), 
-    //     meta: {
-    //         icon: "main",
-    //         // target: "_blank" // 在新窗口中打开
-    //         title: "jsresize"
-    //     },
-    //     name: "jsresize"
-    // },
+
     // {
     //     path: "/myChart",
     //     component: () =>
@@ -127,6 +118,8 @@ export const constantRoutes = [{
         component: Layout,
         name: 'uavsmanage',
         meta: { title: '监控管理', icon: 'el-icon-setting' },
+        // 重定向
+        redirect: '/lookmanager',
         children: [
             // {
             //     path: '/pointmanager',
@@ -209,77 +202,65 @@ export const constantRoutes = [{
     },
 
 
-    // {
-    //     path: '/index',
-    //     name: 'index',
-    //     redirect: '/index',
-    //     component: Layout,
-    //     children: [{
-    //         path: '/index',
-    //         name: 'index',
-    //         component: () =>
-    //             import ('@/views/main/indexpv.vue'),
-    //         meta: { title: '实时', icon: 'index' },
-    //         hidden: true
-    //     }]
-    // },
+
+  
     //系统管理(超管)
-    {
-        path: '/sysmanage', // menu id : 70
-        component: Layout,
-        name: 'sysmanage',
-        meta: { title: '系统管理(超管)', icon: 'el-icon-setting' },
-        children: [{
-                path: 'company',
-                name: 'company',
-                component: () =>
-                    import ('@/views/sysmanage/company'),
-                meta: { title: '公司管理', icon: 'el-icon-goods' }
-            },
-            {
-                path: 'uavfactory',
-                name: 'uavfactory',
-                component: () =>
-                    import ('@/views/sysmanage/uavFactory'),
-                meta: { title: '无人机厂商', icon: 'factory' }
-            },
-            {
-                path: 'uavtype',
-                name: 'uavtype',
-                component: () =>
-                    import ('@/views/sysmanage/uavType'),
-                meta: { title: '无人机类型', icon: 'uav_type' }
-            },
-            {
-                path: 'uav',
-                name: 'uav',
-                component: () =>
-                    import ('@/views/sysmanage/uav'),
-                meta: { title: '无人机管理', icon: 'uav_manage' }
-            },
-            {
-                path: 'hive',
-                name: 'hive',
-                component: () =>
-                    import ('@/views/sysmanage/hive'),
-                meta: { title: '停机坪管理', icon: 'hive_gray' }
-            },
-            {
-                path: 'uavhiverel',
-                name: 'uavhiverel',
-                component: () =>
-                    import ('@/views/sysmanage/uavHiveSnIdRel'),
-                meta: { title: '设备映射', icon: 'uavhiverel' }
-            },
-            {
-                path: 'useradmin',
-                name: 'useradmin',
-                component: () =>
-                    import ('@/views/sysmanage/userAdmin'),
-                meta: { title: '管理员账户', icon: 'user_admin' }
-            }
-        ]
-    },
+    // {
+    //     path: '/sysmanage', // menu id : 70
+    //     component: Layout,
+    //     name: 'sysmanage',
+    //     meta: { title: '系统管理(超管)', icon: 'el-icon-setting' },
+    //     children: [{
+    //             path: 'company',
+    //             name: 'company',
+    //             component: () =>
+    //                 import ('@/views/sysmanage/company'),
+    //             meta: { title: '公司管理', icon: 'el-icon-goods' }
+    //         },
+    //         {
+    //             path: 'uavfactory',
+    //             name: 'uavfactory',
+    //             component: () =>
+    //                 import ('@/views/sysmanage/uavFactory'),
+    //             meta: { title: '无人机厂商', icon: 'factory' }
+    //         },
+    //         {
+    //             path: 'uavtype',
+    //             name: 'uavtype',
+    //             component: () =>
+    //                 import ('@/views/sysmanage/uavType'),
+    //             meta: { title: '无人机类型', icon: 'uav_type' }
+    //         },
+    //         {
+    //             path: 'uav',
+    //             name: 'uav',
+    //             component: () =>
+    //                 import ('@/views/sysmanage/uav'),
+    //             meta: { title: '无人机管理', icon: 'uav_manage' }
+    //         },
+    //         {
+    //             path: 'hive',
+    //             name: 'hive',
+    //             component: () =>
+    //                 import ('@/views/sysmanage/hive'),
+    //             meta: { title: '停机坪管理', icon: 'hive_gray' }
+    //         },
+    //         {
+    //             path: 'uavhiverel',
+    //             name: 'uavhiverel',
+    //             component: () =>
+    //                 import ('@/views/sysmanage/uavHiveSnIdRel'),
+    //             meta: { title: '设备映射', icon: 'uavhiverel' }
+    //         },
+    //         {
+    //             path: 'useradmin',
+    //             name: 'useradmin',
+    //             component: () =>
+    //                 import ('@/views/sysmanage/userAdmin'),
+    //             meta: { title: '管理员账户', icon: 'user_admin' }
+    //         }
+    //     ]
+    // },
     //系统管理(超管)
 
     // {

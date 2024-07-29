@@ -3,8 +3,8 @@
  * @version: 
  * @Author: Eugene
  * @Date: 2023-11-23 11:39:32
- * @LastEditors: Andy
- * @LastEditTime: 2024-04-24 13:27:08
+ * @LastEditors: likai 2806699104@qq.com
+ * @LastEditTime: 2024-07-25 16:09:46
  */
 import * as uavApi from '@/api/uav';
  //头部引入： import * as uavApi from '@/api/uav';
@@ -462,6 +462,17 @@ const actions = {
         })
     },
 
+    uploadKmz({ commit, state }, payload) {
+        return new Promise((resolve, reject) => {
+            uavApi.uploadKmz(payload).then(response => {
+                resolve(response)
+            }).catch(error => {
+                reject(error)
+            })
+        })
+    },
+
+    
     
 
 

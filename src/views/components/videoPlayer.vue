@@ -67,10 +67,9 @@ export default {
     };
   },
   watch: {
-    // url(newVal) {
-    //   if (newVal == null) { newVal = "-"; }
-    //   this.urlTemp = newVal;
-    // }
+    url(newVal) {
+      this.urlEditor = newVal;
+    }
   },
   created() {
     // console.log("created  第" + this.streamNo + "个视频", "播放地址：" + this.url)
@@ -104,7 +103,7 @@ export default {
       this.$parent.$parent.doCommand(command, p1, p2, p3, p4, timeout);
     },
     switchVideoNo() {
-      this.$parent.$parent.switchVideoNo(this.streamNo, this.uavSnEditor);
+      this.$parent.$parent.$parent.switchVideoNo(this.streamNo, this.uavSnEditor);
     },
     play() {
       this.loading = true;

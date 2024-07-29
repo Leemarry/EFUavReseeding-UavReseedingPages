@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-23 19:08:24
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-15 17:05:15
+ * @LastEditTime: 2024-07-29 10:44:02
 -->
 <!--  -->
 <template>
@@ -277,8 +277,7 @@
                                 <el-button @click="openTaskDialog">{{ `上传${currentType ? '航点' : '航线'}` }}</el-button>
                                 <el-button @click="downloadRouteTask" v-if="1 == 2">下载</el-button>
                                 <el-button @click="isVisableSetunifiedHeight = !isVisableSetunifiedHeight">设置统一高度</el-button>
-                                <el-button @click="seedmsg">SSE</el-button>
-
+                                <!-- <el-button @click="seedmsg">SSE</el-button> -->
                                 <div id="con"></div>
                                 <div class="block" v-show="isVisableSetunifiedHeight">
                                     <el-slider @change="setunifiedHeight" v-model="unifiedHeight" :max="500" show-input>
@@ -316,7 +315,7 @@
                                                             <el-checkbox v-model="item.checked" @change="linechangeChecked(item)">{{ `路径点${item.id}` }}</el-checkbox>
                                                         </div>
                                                         <div style="width:180px">
-                                                            <el-slider v-model="item.onalt" :max="500"></el-slider>
+                                                            <el-slider @change="setHeight(item, item.onalt)" v-model="item.onalt" :max="500"></el-slider>
                                                         </div>
                                                     </div>
                                                 </template>
@@ -380,7 +379,6 @@
                     <el-button size="mini" @click="canlceHandle">取消</el-button>
                 </div>
             </div>
-
         </div>
         <div id="fileDialog" class="block" @click="closeFileDialog">
             <div class="content" id="div1">
@@ -397,7 +395,7 @@
                 </div>
                 <div id="footer">
                     <el-button size="mini" @click="fileSubmit" :disabled="!(fileList && fileList.length > 0)" :loading="btnloading">{{ '上传' }}</el-button>
-                    <el-button size="mini" @click="canlceHandle">取消</el-button>
+                    <el-button size="mini" @click="canlcefileHandle">取消</el-button>
                 </div>
             </div>
         </div>
@@ -428,7 +426,7 @@
             </div>
         </div>
         <!-- 上传补播路径任务弹窗 -->
-        <missionTaskDialog ref="missionTaskDialog" @submit:missionTask=uploadRouteTask></missionTaskDialog>
+        <!-- <missionTaskDialog ref="missionTaskDialog" @submit:missionTask=uploadRouteTassk></missionTaskDialog> -->
         <processDialog ref="processDialog" :defaultUavSn="defaultUavSn"></processDialog>
         <!-- 是否保存 -->
         <el-dialog title="下载完成" :visible.sync="centerDialogVisible" width="20%" center>
@@ -560,24 +558,20 @@ export default {
                 // 获取newVal 每一个的索引 也就是 setMap 的key
                 const indexArr = []
                 for (let i = 0; i < newVal.length; i++) {
-                    const  index = this.lineList.findIndex(item => item.id === newVal[i].id)
-                    if(index >= 0){
-                        indexArr.push(index*2)
-                        indexArr.push(index*2+1)
+                    const index = this.lineList.findIndex(item => item.id === newVal[i].id)
+                    if (index >= 0) {
+                        indexArr.push(index * 2)
+                        indexArr.push(index * 2 + 1)
                     }
                 }
                 const colorPoints = this.lineToRoute(newVal) // 需要将选中的点高亮并连接线
-                //  this.lineList
-                const setMap = new Map();
-                for (let index = 0; index < newVal.length; index++) {
-                    const element = newVal[index];
-                    const i = index * 2;
-                    setMap.set(i, element.id);
-                    setMap.set(i + 1, element.id);
-                }
-                // 将选中索引设置高亮
-                console.log('indexArr',indexArr);
-                
+                // const setMap = new Map();
+                // for (let index = 0; index < newVal.length; index++) {
+                //     const element = newVal[index];
+                //     const i = index * 2;
+                //     setMap.set(i, element.id);
+                //     setMap.set(i + 1, element.id);
+                // }
                 this.$refs.CesiumMap.updatePointsColor(colorPoints, indexArr)
             },
             deep: true // 深度监听对象数组的变化  
@@ -592,17 +586,23 @@ export default {
         },
         /**绘制航线 */
         drawLines(positions, type = this.currentType) {
-            console.log('');
-
+            // 判断 CesiumMaps是否存在
+            if (!this.$refs.CesiumMap) {
+                return;
+            }
             this.$refs.CesiumMap.drawLines(positions);
         },
         drawPoints(positions) {
+            // 判断 CesiumMaps是否存在
+            if (!this.$refs.CesiumMap) {
+                return;
+            }
             this.$refs.CesiumMap.drawPoints(positions);
         },
         sendEntityMap(entityMap, viewer) {
             console.log('entityMap', entityMap, viewer);
         },
-        /**后端返回数据 */
+        /**后端返回数据 没有用*/
         respondRouteInfo(newVal) {
             // this.centerDialogVisible = true
             const result = newVal.map((item) => [item.lng / 10000000, item.lat / 10000000, item.altRel / 100]);  // 差一个高度
@@ -612,12 +612,7 @@ export default {
         /**计算点信息  绘制航线 */
         pointToRoute(newVal) {
             const result = newVal.map((item) => [item.lng, item.lat, item.alt]);
-            const setMap = new Map();
-            for (let index = 0; index < newVal.length; index++) {
-                const element = newVal[index];
-                setMap.set('single' + element.id, [element.lng, element.lat, element.alt])
-            }
-            this.resultArray = result
+            // this.resultArray = result // 刚注释
             return result || []
         },
         /* 计算线信息  绘制航线 */
@@ -627,12 +622,79 @@ export default {
                 [item.onlng, item.onlat, item.onalt], // 起点  
                 [item.offlng, item.offlat, item.offalt] // 终点  
             ]);
-            this.resultArray = result
             return result || []
         },
+        cutlineToRoute(lines = this.chooseLinelist, cutDis = 2.5) {
+            const result = lines.flatMap((item) => {
+                const arr = this.calculateEquinox(item.onlng, item.onlat, item.offlng, item.offlat, cutDis)
+                arr.forEach(element => {
+                    element[2] = item.onalt
+                });
+                return arr;
+            });
+            return result || []
+        },
+        /**化点 */
+        calculateEquinox(onlng, onlat, offlng, offlat, spacing = 2) {
+            var from = turf.point([onlng, onlat]);
+            var to = turf.point([offlng, offlat]);
+            var options = {
+                units: 'kilometers'
+            };
+            var distance = turf.distance(from, to, options) * 1000;
+            // console.log(`result两点距离 ${distance},间距 ${spacing}`);
+            const segmentCount = distance / spacing;
+            // console.log(segmentCount);
+            if (segmentCount < 1) {
+                return [
+                    [onlng, onlat], // 起点  
+                    [offlng, offlat] // 终点  
+                ];
+            }
+            const plat = (offlat - onlat) / segmentCount;
+            const plon = (offlng - onlng) / segmentCount;
+            const points = [[onlng, onlat]]; // 起始坐标
+            for (let i = 1; i < segmentCount; i++) {
+                const lat = onlat + (plat * i);
+                const lon = onlng + (plon * i);
+                points.push([lon, lat]);
+            }
+            points.push([offlng, offlat]); // 最后一个点
+            return points;
+
+        },
+        calculateEquinoxObj(onlng, onlat, offlng, offlat, spacing = 2) {
+            var from = turf.point([onlng, onlat]);
+            var to = turf.point([offlng, offlat]);
+            var options = {
+                units: 'kilometers'
+            };
+            var distance = turf.distance(from, to, options) * 1000;
+            // console.log(`result两点距离 ${distance},间距 ${spacing}`);
+            const segmentCount = distance / spacing;
+            // console.log(segmentCount);
+            if (segmentCount < 1) {
+                return [
+                    [onlng, onlat], // 起点  
+                    [offlng, offlat] // 终点  
+                ];
+            }
+            const plat = (offlat - onlat) / segmentCount;
+            const plon = (offlng - onlng) / segmentCount;
+            const points = [[onlng, onlat]]; // 起始坐标
+            for (let i = 1; i < segmentCount; i++) {
+                const lat = onlat + (plat * i);
+                const lon = onlng + (plon * i);
+                points.push([lon, lat]);
+            }
+            points.push([offlng, offlat]); // 最后一个点
+            return points;
+
+        },
+
         /** 用于切换 绘制所有的点 */
         drawAllPoints(arr, type) {
-            if (type != this.currentType) { return false; }
+            if (type != this.currentType) { return false; }  // 查询点线时 会调用这个方法
             if (type) {
                 // 绘制所有点
                 const PositionsList = this.pointToRoute(arr)
@@ -645,55 +707,42 @@ export default {
         },
         /**保存航线☞store */
         saveRouteToStore(showMsg = false) {
-            const dateId = Date.now();
-            const mid = dateId;
-            const unifiedHeight = null;
-            var geo = this.resultArray.map(coord => {
-                let values = new Array(3);
-                values[0] = coord[0]; // 航线经度
-                values[1] = coord[1]; // 航纬度
-                if (parseFloat(coord[2]) < 10) {
-                    values[2] = 30; // 高度
-                } else {
-                    values[2] = coord[2];
-                }
-                return values;
-            });
-            this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: geo, unifiedHeight, }); // 存储store
-            if (showMsg) {
-                this.showToast('已保存')
+            let geo =[]
+            if(this.currentType){
+             geo=  this.pointToRoute(this.choosePointlist)  //this.savePointRouteData()
+            }else{
+              geo=this.cutlineToRoute(this.chooseLinelist,2.5) // this.saveLineRouteData()
             }
+            this.saveRouteDatas(geo)
+     
         },
-        saveRouteData(showMsg) {
-            /**数据处理*/
-            // [[113.36887409647213,23.155143504551752,19.00895890982441],[113.36887409647213,23.155143504551752,19.00895890982441]] 
-            var geo = this.choosePointlist.map((obj) => {
-                let values = new Array(3);
-                values[0] = obj.lng; // 航线经度
-                values[1] = obj.lat; // 航纬度
-                if (parseInt(obj.alt) < 10) {
-                    values[2] = 30; // 高度
-                } else {
-                    values[2] = obj.alt;
-                }
-                return values;
-            });
-            const dateId = Date.now();
-            const mid = dateId;
+        saveRouteDatas(geo) {
+            const mid = Date.now();
             const unifiedHeight = null;
             this.$store.dispatch("routeData/setRouteData", { mid, geoCoordinates: geo, unifiedHeight, }); // 存储store
-            if (showMsg) {
-                this.showToast('已保存')
-            }
+            this.showToast('已保存')
         },
         sendrouteInfoEvent() { },
-        /**设置统一高度 */
+        /**设置统一高度 //  1:point 0:line */
         setunifiedHeight() {
-            var modifiedArray = this.choosePointlist.map((obj) => {
-                obj.alt = this.unifiedHeight;
-                return obj;
-            });
-            this.choosePointlist = modifiedArray;
+            if (!this.currentType) {
+                var modifiedArray = this.chooseLinelist.map((obj) => {
+                    obj.onalt = this.unifiedHeight;
+                    obj.offalt = this.unifiedHeight;
+                    return obj;
+                });
+                this.chooseLinelist = modifiedArray;
+            } else {
+                var modifiedArray = this.choosePointlist.map((obj) => {
+                    obj.alt = this.unifiedHeight;
+                    return obj;
+                });
+                this.choosePointlist = modifiedArray;
+            }
+
+        },
+        setHeight(item, alt) {
+            item.offalt = alt;
         },
         //#endregion
 
@@ -876,13 +925,11 @@ export default {
                 this.checkAll = false
                 // 不是全选 仅需绘制点
                 console.log('不是全选 仅需绘制点', this.lineList);
-
                 this.drawAllPoints(this.pointlist, 1)
             }
         },
         /**选择补播路径点*/
         pointchangeChecked(object) {
-
             if (object.checked) {
                 this.choosePointlist.push({ ...object });
             } else {
@@ -930,33 +977,16 @@ export default {
                 block: "start",
             });
         },
-
         //#endregion
-
-
-
-
         /**页面新增按钮--上传 */
         //#region ---------------------------------------------------------------上传补播路径任务弹窗---------------------------------------------------------------------------
         /**打开弹窗 */
         openTaskDialog() {
-            // let missionTaskDialog = this.$refs.missionTaskDialog
-            // if (missionTaskDialog) missionTaskDialog.outerVisible = true; 
             if (this.currentType) {
                 this.uploadRouteTask(this.choosePointlist)
             } else {
-                // 当前线 分段 [[item.onlng, item.onlat, item.onalt],[item.onlng, item.onlat, item.onalt]]
-                const result = this.chooseLinelist.flatMap((item) => {
-                    const arr = this.calculateEquinox(item.onlng, item.onlat, item.offlng, item.offlat, 2.5)
-                    arr.forEach(element => {
-                        element[2] = item.onalt
-                    });
-                    return arr;
-                });
-                console.log('result', result);
-
-                this.openLineDialog()
-
+                this.uploadlineRouteTask(this.chooseLinelist)
+                // this.openLineDialog()
             }
         },
         openLineDialog() {
@@ -965,35 +995,6 @@ export default {
         },
         //#endregion
         // #region ---------------------------------------------------------------  监听 -------------------------------------------------------
-        /**化点 */
-        calculateEquinox(onlng, onlat, offlng, offlat, spacing = 2) {
-            var from = turf.point([onlng, onlat]);
-            var to = turf.point([offlng, offlat]);
-            var options = {
-                units: 'kilometers'
-            };
-            var distance = turf.distance(from, to, options) * 1000;
-            // console.log(`result两点距离 ${distance},间距 ${spacing}`);
-            const segmentCount = distance / spacing;
-            // console.log(segmentCount);
-            if (segmentCount < 1) {
-                return [
-                    [onlng, onlat], // 起点  
-                    [offlng, offlat] // 终点  
-                ];
-            }
-            const plat = (offlat - onlat) / segmentCount;
-            const plon = (offlng - onlng) / segmentCount;
-            const points = [[onlat, onlng]]; // 起始坐标
-            for (let i = 1; i < segmentCount; i++) {
-                const lat = onlat + (plat * i);
-                const lon = onlng + (plon * i);
-                points.push([lat, lon]);
-            }
-            points.push([offlat, offlng]); // 最后一个点
-            return points;
-
-        },
         createSse() {
             let uid = 'likai'
             const self = this
@@ -1063,21 +1064,19 @@ export default {
         /**上传至开源无人机  */
         async uploadRouteTask(points) {
             if (!points || points.length <= 0) { return false; }
-
             let url = 'uvas/uploadRouteTask';
+            console.log('points', points);
             try {
                 this.loadingText = '正在上传中'
                 this.fullloading = true;
                 const uavId = this.defaultUavSn;
-
                 const params = { uavId: this.defaultUavSn }
-
                 const payload = { params, that: this, url, data: points }
                 const response = await this.$store.dispatch('uavs/uploadRouteTask', payload);
                 const { data, message, code } = response;
                 if (code === 1) {
                     this.showMessage(message, "success");
-                    this.saveRouteData()
+                    this.saveRouteDatas(this.pointToRoute(points))
                 } else {
                     this.showMessage(message, "warning");
                 }
@@ -1088,7 +1087,35 @@ export default {
                 this.fullloading = false;
             }
         },
-        /**从无人机下载航线文件--发送解析-saveRouteData*/
+        lineToPoint(chooseLiseList, cutDis) {
+            const result = chooseLiseList.flatMap((item) => {
+                const arr = this.calculateEquinox(item.onlng, item.onlat, item.offlng, item.offlat, cutDis)
+                const id = item.id
+                const handleId = item.handleid
+                const alt = item.onalt
+                const newArr = arr.map(item => ({
+                    "lat": item[1],
+                    "lng": item[0],
+                    "alt": alt,
+                    "seedNum": arr.length,
+                    "flyTimes": 0,
+                    "id": id,
+                    "handleId": handleId,
+                    "checked": false
+                }));
+                return newArr;
+            });
+           return result;
+
+        },
+        async uploadlineRouteTask(points) {
+            if (!points || points.length <= 0) { return false; }
+            // 当前线 分段 [[item.onlng, item.onlat, item.onalt],[item.onlng, item.onlat, item.onalt]]
+            const result =   this.lineToPoint(this.chooseLinelist, 2.5)
+            console.log('result',result);
+            this.uploadRouteTask(result) 
+        },
+        /**从无人机下载航线文件--发送解析-保存*/
         async downloadRouteTask() {
             try {
                 this.loadingText = '请求下载中'
@@ -1142,11 +1169,9 @@ export default {
 
             }
         },
-
         //#endregion 
 
         //#region -----------------------------------------------------------------处理弹窗----------------------------------------------------------------------
-
         openFileDialog() {
             //打开弹窗
             this.fileList = []
@@ -1168,6 +1193,10 @@ export default {
                     div.style.display = "none";
                 }
             }
+        },
+        canlcefileHandle(){
+             const handleDialogEle = document.getElementById('fileDialog')
+            handleDialogEle.style.display = 'none'
         },
 
         /**页面点击处理按钮--打开处理弹窗 */
@@ -1268,8 +1297,6 @@ export default {
             let fileName = file.name;
             let size = file.size;
             fileName = fileName.substring(fileName.lastIndexOf('.'))
-            console.log('fileName', fileName);
-
             const isKmz = fileName === '.zip'; // ||'.kml'
             const isLt2M = file.size / 1024 / 1024 < 50;
             if (!isKmz) {
@@ -1523,7 +1550,7 @@ export default {
     },
     //生命周期 - 挂载完成（可以访问DOM元素）
     async mounted() {
-        console.log('父组件');
+        // console.log('父组件');
         let key = "defaultUav-" + this.userId;
         this.defaultUavSn = localStorage.getItem(key)
         this.createSse() // 看不
@@ -1551,4 +1578,4 @@ export default {
 
 <style lang="scss" scoped>
 //@import url(); 引入公共css类</style>
-<style lang="scss" src="./planningManager.scss" scoped>
+<style lang="scss" src="./planningManager.scss" scoped></style>

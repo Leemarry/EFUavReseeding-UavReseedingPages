@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-12-01 16:44:32
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-12 15:51:28
+ * @LastEditTime: 2024-07-29 10:42:55
 -->
 <!-- 航线列表 -->
 <template>
@@ -22,14 +22,15 @@
         <!-- 显示 routes 的内容 -->
         <div v-show="shouldShowRoutes">
             <div class="sliderContainer">
-                <el-tooltip effect="dark" content="统一速度" placement="top-start">
-                    <span>{{ `速度: ${slidervalue}` }}</span>
+                <el-tooltip effect="dark" :content="`统一速度:${slidervalue}`" placement="top-start">
+                    <span>{{ `速度: ${Number(slidervalue).toFixed(2)}` }}</span>
                 </el-tooltip>
-
-                <el-slider v-model="slidervalue" :step="1" :min="4" :max="15" show-stops>
+                <el-slider v-model="slidervalue" :step="1" :min="2" :max="15" show-stops>
                 </el-slider>
+                <i class="el-icon-plus" @click='plusspeed()'></i>
+                <i class="el-icon-discount" @click='speedTag()'></i>
             </div>
-            <div class="">
+            <!-- <div class="">
                 <el-row>
                     <el-col :span="4">
                         <div class="动作前">动作前</div>
@@ -44,7 +45,7 @@
                         <el-input placeholder="请输入" v-model="endTime"></el-input>
                     </el-col>
                 </el-row>
-            </div>
+            </div> -->
 
             <el-card class="box-card" v-for="(route, key) in routes" :key="key">
                 <template #header>
@@ -52,7 +53,7 @@
                         <el-row :gutter="5" style="width:100%">
                             <el-col :span="18">
                                 <el-input v-model="newName" class="inputText" v-if="route.edit" @keyup.enter.native="renameAction(route)"></el-input>
-                                <span @click="openEdit(route)" :title="route.mid" v-else>{{ route.text ? route.text : route.mid }}</span>
+                                <span style='cursor: pointer;' @click="openEdit(route)" :title="route.mid" v-else>{{ route.text ? route.text : route.mid }}</span>
                             </el-col>
                             <el-col :span="6">
                                 <i class="iconfont  icon-tijiao cursorStyle" :class="{ disabled: maploading }" :title="'上传无人机'" @click=" maploading ? null : sendUploadToUav(route, 'drow')"></i>
@@ -137,7 +138,7 @@ export default {
         return {
             startTime: 1,
             endTime: 3,
-            slidervalue: 5,
+            slidervalue: 3.5834615230560,
             showCloseIcon: false,
             choiseTime: [],
             isItATask: false,
@@ -218,6 +219,12 @@ export default {
     watch: {},
     //方法集合
     methods: {
+        speedTag(){
+            this.slidervalue=3.5834615230560
+        },
+        plusspeed(){
+            this.slidervalue +=0.2
+        },
         itemClick(index) {
             console.log('sssopp', index);
         },
@@ -513,13 +520,19 @@ export default {
     display: flex;
     align-items: center;
     margin: 0px 5px;
-
     &> :first-child {
         margin: 0px 15px 0px 10px;
     }
-
-    &> :not(:first-child) {
+    &> :nth-last-child(3) {
         flex-grow: 1;
+    }
+    &> :nth-last-child(2){
+        margin: 0px 5px 0px 5px;
+        cursor: pointer;
+    }
+    &> :last-child{
+        margin: 0px 5px 0px 5px;
+        cursor: pointer;
     }
 }
 

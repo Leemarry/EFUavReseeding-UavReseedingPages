@@ -68,6 +68,8 @@ const state = {
     uavId: null,
     array: [],
     imgarray: [],
+    base64array:[],
+    base64:''
   },
   /**默认无人机拍摄图片信息列表--用于显示列表 */
   defaultUavImageList: [],
@@ -79,6 +81,8 @@ const state = {
     url: '', //  currentResultImg
     uavId: null, //currentuavId
     array: [],
+    base64array:[],
+    base64: '',
   },
 
   processBlockAllList: [], // 处理信息
@@ -355,21 +359,25 @@ const mutations = {
             }
           }
           if (index >= 0) {
+            const imageBase64 =  'data:image/png;base64,'+ data.imageBase64
             state.imageHeartbeatList[index].imgarray.unshift(data.url);
             state.imageHeartbeatList[index].array.unshift(data);
+            state.imageHeartbeatList[index].base64array.unshift(imageBase64);
             state.imageHeartbeatList[index].url = data.url; // 当前最新实时照片
+            state.imageHeartbeatList[index].base64 =imageBase64; // 当前最新实时照片 base64
             // state.imageHeartbeatList[index] = { imgarray: [data.url, ...state.imageHeartbeatList[index].imgarray], array: [data, ...state.imageHeartbeatList[index].array], url: data.url };
 
           } else {
-
+            const imageBase64 =  'data:image/png;base64,'+ data.imageBase64
             //后来修改 修改成 里面有 数据包列表 图片列表 ， 当前无人机 ，当前最新url
-            state.imageHeartbeatList.push({ uavId: deviceID, array: [data], imgarray: [data.url], url: data.url });
+            state.imageHeartbeatList.push({ uavId: deviceID, array: [data], imgarray: [data.url], url: data.url,base64array: [imageBase64] ,base64 : imageBase64 });
             index = state.imageHeartbeatList.length - 1;
 
           }
         } else {
           // 是第一个 构造对象数组
-          state.imageHeartbeatList.push({ uavId: deviceID, array: [data], imgarray: [data.url], url: data.url });
+          const imageBase64 =  'data:image/png;base64,'+ data.imageBase64
+          state.imageHeartbeatList.push({ uavId: deviceID, array: [data], imgarray: [data.url], url: data.url ,base64array: [imageBase64] ,base64 : imageBase64 });
           index = 0;
         }
         if (isNowUav) {
@@ -383,7 +391,8 @@ const mutations = {
             url: '',
             uavId: null,
             array: [],
-            imgarray: []
+            imgarray: [],
+            base64: ''
           };
           // state.defaultUavImageList.splice(0, state.defaultUavImageList.length); //清空
         }

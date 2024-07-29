@@ -3,8 +3,8 @@
  * @version: 
  * @Author: Eugene
  * @Date: 2023-11-23 11:47:45
- * @LastEditors: likai ‘766173427@qq.com’
- * @LastEditTime: 2024-06-20 15:17:27
+ * @LastEditors: likai 2806699104@qq.com
+ * @LastEditTime: 2024-07-25 16:10:00
  */
 import request from '@/utils/request'
 
@@ -401,6 +401,17 @@ export function uploadFile(data) {
         timeout: 30000, // 设置超时时间为30秒
     })
 }
+
+export function uploadKmz(data) {
+    return request({
+        url: '/uav/uploadKmz',
+        method: 'post',
+        data,
+        timeout: 30000, // 设置超时时间为30秒
+    })
+}
+
+
 
 
 

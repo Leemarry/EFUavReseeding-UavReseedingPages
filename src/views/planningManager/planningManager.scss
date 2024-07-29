@@ -249,7 +249,12 @@ opacity: 0;
 ::v-deep .footer-section{
   .footer-bottom{
     padding: 5px 0 0 5px;
+    height: 100%;
+    overflow: hidden;
     .hascheckedPoint {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
       .settingBnt{
         margin-bottom: 5px;
         display: flex;
@@ -257,6 +262,10 @@ opacity: 0;
           margin:0px 15px;
           flex: 1;
         }
+      }
+      .checked-tablecard{
+        flex: 1;
+        overflow: auto;
       }
     }
     .el-row{

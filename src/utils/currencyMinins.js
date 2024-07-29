@@ -59,6 +59,7 @@ export default {
                 const { code, message, data } = response;
                 if (code === 1) {
                     uavArray = data
+                    // this.$store.dispatch("publicData/setUavlist", { mid, geoCoordinates: geo, unifiedHeight, });  publicData// 存储store 
                 }
             } catch (erro) {
                 this.showMessage(error, "error");

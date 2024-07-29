@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-21 11:28:38
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-12 20:11:44
+ * @LastEditTime: 2024-07-24 09:38:22
 -->
 <!-- 无人机监控管理 -->
 <template>
@@ -22,22 +22,21 @@
                     <details open>
                         <summary>所有地块总计</summary>
                         <!-- handleInfo -->
-                        <div @click="switchWorkBlock(handleInfo,true)" class="tab-content">
+                        <div @click="switchWorkBlock(handleInfo, true)" class="tab-content">
                             <!-- <p>空斑面积：157.2㎡</p> -->
                             <p>{{ `空斑面积：${handleInfo.gapSquare} ㎡` }}</p>
                             <p>{{ `补播区域数量：${handleInfo.reseedAreaNum}` }}</p>
-                            <p>{{`所需草种数量：${handleInfo.seedNum}`}}</p>
-
+                            <p>{{ `所需草种数量：${handleInfo.seedNum ? handleInfo.seedNum : '未添加'}` }}</p>
                         </div>
                     </details>
                     <details v-for="(block, index) of blockList" :key="index">
-                        <summary>工作地块{{ `block` }}：{{index}}</summary>
-                        <div @click="switchWorkBlock(block,false)" class="tab-content">
-                            <p>{{`空斑面积：${block.gapSquare}㎡`}}</p>
-                            <p>{{`补播区域数量：${block.reseedAreaNum}`}}</p>
-                            <p>{{`所需草种数量：${block.seedNum}`}}</p>
-                            <p>{{`中心经度：${block.centreLongitude}`}}</p>
-                            <p>{{`中心纬度：${block.centreLatitude}`}}</p>
+                        <summary>工作地块{{ `block` }}：{{ index }}</summary>
+                        <div @click="switchWorkBlock(block, false)" class="tab-content">
+                            <p>{{ `空斑面积：${block.gapSquare}㎡` }}</p>
+                            <p>{{ `补播区域数量：${block.reseedAreaNum}` }}</p>
+                            <p>{{ `所需草种数量：${block.seedNum}` }}</p>
+                            <p>{{ `中心经度：${block.centreLongitude}` }}</p>
+                            <p>{{ `中心纬度：${block.centreLatitude}` }}</p>
                         </div>
                     </details>
                 </div>
@@ -53,7 +52,7 @@
                                     </div>
                                     <div class="uavParmMainMiddle">
                                         <div>
-                                            <span>{{defaultUavHeartbeat && defaultUavHeartbeat.uavId ? defaultUavHeartbeat.uavId:defaultUavSn}}</span>
+                                            <span>{{ defaultUavHeartbeat && defaultUavHeartbeat.uavId ? defaultUavHeartbeat.uavId : defaultUavSn }}</span>
                                             <span style="color:rgb(187, 187, 187);font-size: 10px"></span>
                                         </div>
                                         <div class="parmName" @click="openHeart">无人机</div>
@@ -65,8 +64,8 @@
                                     </div>
                                     <div class="uavParmMainMiddle">
                                         <div>
-                                            <span>{{defaultUavHeartbeat && defaultUavHeartbeat.altabs ? defaultUavHeartbeat.altabs: '暂无信息'}}</span>
-                                            <span style="color:rgb(187, 187, 187);font-size: 10px">{{'米'}}</span>
+                                            <span>{{ defaultUavHeartbeat && defaultUavHeartbeat.altabs ? defaultUavHeartbeat.altabs : '暂无信息' }}</span>
+                                            <span style="color:rgb(187, 187, 187);font-size: 10px">{{ '米' }}</span>
                                         </div>
                                         <div class="parmName">海拔</div>
                                     </div>
@@ -77,10 +76,10 @@
                                     </div>
                                     <div class="uavParmMainMiddle">
                                         <div>
-                                            <span>{{defaultUavHeartbeat && defaultUavHeartbeat.lng ?processedNumber(defaultUavHeartbeat.lng) :'暂无信息'}}</span>
-                                            <span style="color:rgb(187, 187, 187);font-size: 10px">{{"°"}}</span>
+                                            <span>{{ defaultUavHeartbeat && defaultUavHeartbeat.lng ? processedNumber(defaultUavHeartbeat.lng) : '暂无信息' }}</span>
+                                            <span style="color:rgb(187, 187, 187);font-size: 10px">{{ "°" }}</span>
                                         </div>
-                                        <div class="parmName">{{'经度'}}</div>
+                                        <div class="parmName">{{ '经度' }}</div>
                                     </div>
                                 </div>
                                 <div class="uavParmMain">
@@ -89,10 +88,10 @@
                                     </div>
                                     <div class="uavParmMainMiddle">
                                         <div>
-                                            <span>{{defaultUavHeartbeat && defaultUavHeartbeat.lat ? processedNumber(defaultUavHeartbeat.lat) :'暂无信息'}}</span>
-                                            <span style="color:rgb(187, 187, 187);font-size: 10px">{{'°'}}</span>
+                                            <span>{{ defaultUavHeartbeat && defaultUavHeartbeat.lat ? processedNumber(defaultUavHeartbeat.lat) : '暂无信息' }}</span>
+                                            <span style="color:rgb(187, 187, 187);font-size: 10px">{{ '°' }}</span>
                                         </div>
-                                        <div class="parmName">{{'纬度'}}</div>
+                                        <div class="parmName">{{ '纬度' }}</div>
                                     </div>
                                 </div>
                             </div>
@@ -101,18 +100,18 @@
                     </el-col>
                     <el-col :xs="24" :sm="24" :md="12" :lg="14" :xl="14">
                         <el-card hadow="always" class="pointlist">
-                            <div class="pointlist-inside" v-if="geoCoordinates.length>0">
+                            <div class="pointlist-inside" v-if="geoCoordinates.length > 0">
                                 <div class="point-total-curee">
-                                    <div>{{`总点数:${geoCoordinates.length}`}}</div>
-                                    <div>{{`当前:${currentWorkPoint.pointId==null?'起飞点' : '点P'+currentWorkPoint.pointId}`}}</div>
+                                    <div>{{ `总点数:${geoCoordinates.length}` }}</div>
+                                    <div>{{ `当前:${currentWorkPoint.pointId == null ? '起飞点' : '点P' + currentWorkPoint.pointId}` }}</div>
                                 </div>
                                 <div class="scrollbar">
                                     <el-scrollbar style="width:98%;height: 200px;max-height:100%; color: #606266;;" wrap-style="overflow-x:hidden;flex:1">
                                         <el-row class="elrow" :gutter="10">
                                             <el-col class="elcol" :md="24" :lg="24" :xl="12" v-for="(item, index) in geoCoordinates" :key="index">
-                                                <div :ref="'point'+index" :id="'point'+index">点P{{index}}</div>
-                                                <div><span>纬度:</span><span>{{processedNumber( item[1])}}</span></div>
-                                                <div><span>经度:</span><span>{{processedNumber(item[0]) }}</span></div>
+                                                <div :ref="'point' + index" :id="'point' + index">点P{{ index }}</div>
+                                                <div><span>纬度:</span><span>{{ processedNumber(item[1]) }}</span></div>
+                                                <div><span>经度:</span><span>{{ processedNumber(item[0]) }}</span></div>
                                             </el-col>
                                         </el-row>
                                     </el-scrollbar>
@@ -129,22 +128,18 @@
         <el-main class="main" style="background-color: rgb(238, 241, 246);">
             <!-- 视频口 -->
             <div class="main-right">
-                <video-player class="video-player"></video-player>
-                <!-- 定位 -->
-                <!-- <div id="location">
-                    <div id="locationinfo" v-for="(item,index) in 2" :key="index">
-                        <span class="info">风速</span>
-                        <span class="value"> 3m/s</span>
-                    </div>
-                </div> -->
+                <videoPlayer class="video-player" :url='defaultUrl'></videoPlayer>
             </div>
             <div class="main-bottom">
                 <!-- 控制台 -->
                 <div class="droneControl">
 
-                    <div class="text textBox" @click="sendinitWebSocket()"><span>p1</span><span>投放</span><span class="redcolor">4</span><span>粒，目前已投放</span><span class="redcolor">0</span>粒<span></span></div>
+                    <div class="text textBox" @click="sendinitWebSocket()"><span>{{ '点P' + currentWorkPoint.pointId }}</span><span>需投放</span><span class="redcolor">{{ "未知" }}</span><span>粒，目前已投放</span><span
+                            class="redcolor">0</span>粒<span></span></div>
                     <!-- 无人机控件 -->
-                    <uavControl :uavControlBtn='uavControlBtn' :defaultUavSn='defaultUavSn' @sendthrowObject="throwObject" @sendmoveUav="moveUav" @sengcamerasetting="camerasetting" @sendcontrolTosendCommand="controlTosendCommand" @sendexecuteTakeoff="executeTakeoff" @sendnextwork="nextwork" @sendflyToHere='flyToHere' @sendfinishwork="finishwork" @sendstartwork="startwork" @senddocommand="doCommand"></uavControl>
+                    <uavControl :uavControlBtn='uavControlBtn' :defaultUavSn='defaultUavSn' @sendthrowObject="throwObject" @sendmoveUav="moveUav" @sengcamerasetting="camerasetting"
+                        @sendcontrolTosendCommand="controlTosendCommand" @sendexecuteTakeoff="executeTakeoff" @sendnextwork="nextwork" @sendflyToHere='flyToHere' @sendfinishwork="finishwork"
+                        @sendstartwork="startwork" @senddocommand="doCommand"></uavControl>
                 </div>
                 <div class="loading">
                     <waterLevel class="waterLevelEChars-out" :loadingInfo="loadingInfo"></waterLevel>
@@ -166,11 +161,11 @@
                     </el-col>
                     <el-col :span="17" align="right">
                         <el-button-group>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1165, 0, 0, 0, 0)">拍照</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1165, 1, 0, 0, 0)">录像</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1165, 2, 0, 0, 0)">回放</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1165, 3, 0, 0, 0)">媒体下载</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1165, 4, 0, 0, 0)">广播</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1165, 0, 0, 0, 0)">拍照</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1165, 1, 0, 0, 0)">录像</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1165, 2, 0, 0, 0)">回放</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1165, 3, 0, 0, 0)">媒体下载</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1165, 4, 0, 0, 0)">广播</el-button>
                         </el-button-group>
                     </el-col>
                 </el-row>
@@ -180,12 +175,12 @@
                     </el-col>
                     <el-col :span="17" align="right">
                         <el-button-group>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1166, 0, 0, 0, 0)">单拍</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1166, 2, 0, 0, 0)">连拍</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1166, 1, 0, 0, 0)">HDR</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1166, 4, 0, 0, 0)">间隔拍照</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1166, 5, 0, 0, 0)">定时拍照</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1166, 6, 0, 0, 0)">全景</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1166, 0, 0, 0, 0)">单拍</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1166, 2, 0, 0, 0)">连拍</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1166, 1, 0, 0, 0)">HDR</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1166, 4, 0, 0, 0)">间隔拍照</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1166, 5, 0, 0, 0)">定时拍照</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1166, 6, 0, 0, 0)">全景</el-button>
                         </el-button-group>
                     </el-col>
                 </el-row>
@@ -195,11 +190,11 @@
                     </el-col>
                     <el-col :span="17" align="right">
                         <el-button-group>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1159, 0, 0, 0, 0)">刷新视频</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1167, 0, 0, 0, 0)">默认</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1167, 1, 0, 0, 0)">广角镜头</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1167, 2, 0, 0, 0)">变焦镜头</el-button>
-                            <el-button type="" round size="mini" @click="isDialogCameraSetting=false;doCommand(1167, 3, 0, 0, 0)">红外镜头</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1159, 0, 0, 0, 0)">刷新视频</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1167, 0, 0, 0, 0)">默认</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1167, 1, 0, 0, 0)">广角镜头</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1167, 2, 0, 0, 0)">变焦镜头</el-button>
+                            <el-button type="" round size="mini" @click="isDialogCameraSetting = false; doCommand(1167, 3, 0, 0, 0)">红外镜头</el-button>
                         </el-button-group>
                     </el-col>
                 </el-row>
@@ -209,13 +204,25 @@
                     </el-col>
                     <el-col :span="17" align="right">
                         <el-button-group>
-                            <el-button type="danger" round size="mini" @click="isDialogCameraSetting=false;doCommand(1175, 0, 0, 0, 0)">格式化SD卡</el-button>
-                            <el-button type="danger" round size="mini" @click="isDialogCameraSetting=false;doCommand(1176, 0, 0, 0, 0)">格式化SSD</el-button>
-                            <el-button type="danger" round size="mini" @click="isDialogCameraSetting=false;doCommand(1177, 0, 0, 0, 0)">格式化储存</el-button>
+                            <el-button type="danger" round size="mini" @click="isDialogCameraSetting = false; doCommand(1175, 0, 0, 0, 0)">格式化SD卡</el-button>
+                            <el-button type="danger" round size="mini" @click="isDialogCameraSetting = false; doCommand(1176, 0, 0, 0, 0)">格式化SSD</el-button>
+                            <el-button type="danger" round size="mini" @click="isDialogCameraSetting = false; doCommand(1177, 0, 0, 0, 0)">格式化储存</el-button>
                         </el-button-group>
                     </el-col>
                 </el-row>
             </div>
+        </el-dialog>
+        <el-dialog title="无人机列表" :visible.sync="dialogVisible" width="350px">
+            <el-select v-model="tempUavSn" placeholder="请选择">
+                <el-option v-for="item in uavs" :key="item.uavId" :label="item.uavName" :value="item.uavId">
+                    <span style="float: left">{{ item.uavName }}</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px">{{ item.uavId }}</span>
+                </el-option>
+            </el-select>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="submitUavInfo()">确 定</el-button>
+            </span>
         </el-dialog>
     </el-container>
 </template>
@@ -233,6 +240,7 @@ import { moveDiv } from "./../core/utils";
 import waterLevel from "../components/ECharts/waterLevelECharts.vue";
 import $ from "jquery";
 import axios from 'axios';
+import currencyMinins from '@/utils/currencyMinins'
 export default {
     name: "",
     //import引入的组件需要注入到对象中才能使用
@@ -243,9 +251,16 @@ export default {
         parmItem,
         waterLevel,
     },
+    mixins: [currencyMinins], //
     data() {
         //这里存放数据
         return {
+            dialogVisible: false,
+            uavs: [],
+            /**默认无人机 */
+            defaultUavSn: "",
+            defaultUrl:'',
+            tempUavSn:this.defaultUavSn,
             img: '',
             isMap: true,
             items: ['Apple', 'Banana', 'Orange', 'Grape'],
@@ -255,10 +270,6 @@ export default {
             /**相机设置 */
             isDialogCameraSetting: false,
             loadingInfo: {},
-            hives: [],
-            uavs: [],
-            /**默认无人机 */
-            defaultUavSn: "",
             timerSendPanData: null,
             webSocket: null,
             /** // 定时重新连接Ws */
@@ -365,6 +376,28 @@ export default {
     },
     //方法集合
     methods: {
+        /**查询所有无人机 */
+        async queryAllUavs() {
+            this.uavs = await this.queryAllUavsByMix()
+            if (!this.uavs || this.uavs.length <= 0) {
+                return false;
+            }
+            const uavinfo = this.uavs.find(uav => uav.uavId == this.defaultUavSn);
+            this.defaultUrl = uavinfo.playUrl1;
+            // defaultUrl
+
+        },
+        submitUavInfo(){
+           this.defaultUavSn = this.tempUavSn
+               let key = "defaultUav-" + this.userId;
+            localStorage.setItem(key, this.defaultUavSn)
+            const uavinfo = this.uavs.find(uav => uav.uavId == this.defaultUavSn);
+            this.defaultUrl = uavinfo.playUrl1;       
+                this.dialogVisible = false
+        },
+        switchVideoNo() {
+            this.dialogVisible = true;
+        },
         async sendinitWebSocket() {
             await this.$store.dispatch("websocket/webSocketInit");
         },
@@ -586,14 +619,14 @@ export default {
                 this.changeuavControlBtn(false);
             }, 1500);
         },
-        flyToHere(data){
+        flyToHere(data) {
             let { lng, lat, alt } = data
             // 小数点处理 保证小数点后7位
             lng = Number(lng).toFixed(7)
             lat = Number(lat).toFixed(7)
             alt = Number(alt).toFixed(2)
             console.log('flyToHere', lng, lat, alt);
-            this.guidToHere( lng, lat, alt )
+            this.guidToHere(lng, lat, alt)
         },
         /**store记录当前点 */
         updateCurrentWorkPoint(pointId, positions) {
@@ -614,8 +647,8 @@ export default {
             try {
                 let formdata = new FormData();
                 formdata.append("uavId", this.defaultUavSn);
-                formdata.append("count", 4); // 投放Id
-                formdata.append("duration", 1);  //投放时间
+                formdata.append("count", 4); // 投放Id 
+                formdata.append("duration", 1);  //投放时间 
                 await this.$store
                     .dispatch("uavs/throwObject", formdata)
                     .then((response) => {
@@ -853,12 +886,19 @@ export default {
         },
         //#endregion
         processedNumber(numStr) {
-            // 判断小数点的位数是否超过5位
+            // 判断是不是数字或者可以转数字 如果是数字或者可以转数字截取小数点后7位 否则返回0
+         
+            // if (isNaN(numStr) || !isNaN(numStr)) {
+            //     return numStr;
+            // }
+            // numStr = parseFloat(numStr).toFixed(7);
+            // return numStr;
+            // // 判断小数点的位数是否超过5位
             numStr = numStr.toString();
             const decimalIndex = numStr.indexOf('.');
-            if (decimalIndex !== -1 && numStr.length - decimalIndex > 6) {
+            if (decimalIndex !== -1 && numStr.length - decimalIndex > 7) {
                 // 小数点超过5位，截取前6位
-                return numStr.slice(0, decimalIndex + 6);
+                return numStr.slice(0, decimalIndex + 8);
             }
             return numStr;
         },
@@ -1133,6 +1173,7 @@ export default {
 
         async init() {
             // this.initWebSocket() //初始生命周期加载
+            this.queryAllUavs()
             this.queryNewInfo()
         },
         /**最新的初始查询 */
@@ -1288,7 +1329,7 @@ export default {
             this.$store.dispatch('ws/CE_SHI_SOCKET_ONMESSAGE', uavHeart); // 用于模拟测试心跳
         },
         //#endregion
-      
+
     },
     //生命周期 - 创建完成（可以访问当前this实例）
     created() { },
@@ -1298,9 +1339,10 @@ export default {
 
         let key = "defaultUav-" + this.userId;
         this.defaultUavSn = localStorage.getItem(key)
+        this.tempUavSn = localStorage.getItem(key)
         this.init();
         const CesiumMap = this.$refs.CesiumMap;
-        if(CesiumMap){
+        if (CesiumMap) {
             this.$refs.CesiumMap.handleOperation();
         }
     },
@@ -1318,11 +1360,13 @@ export default {
 ::v-deep .el-scrollbar__bar.is-horizontal {
     display: none;
 }
+
 ::v-deep .el-aside,
 .el-main {
     padding: 10px;
     // overflow: hidden;
 }
+
 .PointManagerAside-components {
     background-color: rgb(230, 237, 249);
     height: 100%;
@@ -1330,45 +1374,56 @@ export default {
     margin-left: -1px;
     padding: 10px;
 }
+
 .uavInfo {
     margin-top: 20px;
     display: flex;
     flex-direction: row;
+
     .uavInfo-el-row {
         width: calc(100% + 10px);
     }
+
     .uavParm {
         flex: 3;
     }
+
     ::v-deep .pointlist {
         --heightValue: 258px;
         overflow: hidden;
+
         .pointlist-inside {
             overflow: hidden;
         }
+
         .point-total-curee {
             background-color: #fff;
             display: flex;
             flex-direction: row;
             justify-content: space-around;
+
             div:first-of-type {
                 flex: 1;
             }
         }
+
         // .scrollbar{
         //     position: fixed;
         //     height: 250px;
         // }
         height: var(--heightValue);
         flex: 2;
+
         .elcol {
             margin-bottom: 10px;
         }
+
         .el-card__body {
             height: 100%;
         }
     }
 }
+
 .uavParmMain {
     height: auto;
     border: 1px solid #d1caca;
@@ -1378,6 +1433,7 @@ export default {
     display: -webkit-flex;
     /* Safari */
     flex-direction: row;
+
     .uavParmMainLeft {
         width: 35px;
         display: flex;
@@ -1388,6 +1444,7 @@ export default {
     }
 
     container-type: inline-size;
+
     .uavParmMainMiddle {
         font-size: 6cqw;
         height: 50px;
@@ -1406,10 +1463,12 @@ export default {
 .main {
     display: flex;
     flex-direction: column;
+
     .main-right {
         height: 65%;
         position: relative;
         margin-bottom: 20p;
+
         #location {
             background: #d1caca;
             position: absolute;
@@ -1417,29 +1476,35 @@ export default {
             right: 0px;
             padding: 10px 5px;
             width: 120px;
+
             #locationinfo {
                 padding: 9px;
                 background: #f9f9f9;
                 border-radius: 5px;
+
                 .info {
                     border-right: 1px solid #161616;
                     padding-right: 8px;
                 }
+
                 .value {
                     padding-left: 10px;
                 }
             }
+
             #locationinfo:first-child {
                 margin-bottom: 15px;
             }
-            #locationinfo:hover {
-            }
+
+            #locationinfo:hover {}
         }
     }
+
     .main-bottom {
         flex: 1;
         display: flex;
         flex-direction: row;
+
         .droneControl {
             flex: 3;
             display: flex;
@@ -1449,16 +1514,20 @@ export default {
                 display: flex;
                 flex: 1;
             }
+
             .textBox {
                 height: auto;
             }
         }
+
         .loading {
             flex: 1;
+
             .image {
                 width: 250px;
                 height: 250px;
                 position: relative;
+
                 img {
                     width: 240px;
                     height: 320px;
@@ -1499,20 +1568,23 @@ export default {
         flex: 1;
         border: 1px solid #333333;
     }
+
     .block_list {
         width: 220px;
         margin-left: 2px;
         border: 2px solid #333333;
         overflow: scroll;
+
         .tab-content {
             font-size: 13px;
             text-align: center;
             font-weight: 800;
-            & > p {
+
+            &>p {
                 position: relative;
             }
 
-            & > p:first-child::before {
+            &>p:first-child::before {
                 content: "";
                 cursor: pointer;
                 width: 50px;
@@ -1536,7 +1608,8 @@ summary {
     cursor: pointer;
     position: relative;
 }
-details[open] summary ~ * {
+
+details[open] summary~* {
     animation: sweep 0.5s ease-in-out;
 }
 
@@ -1551,20 +1624,21 @@ details[open] summary ~ * {
         margin-top: 0px;
     }
 }
-details > summary::after {
+
+details>summary::after {
     position: absolute;
     content: "+";
     right: 20px;
 }
 
-details[open] > summary::after {
+details[open]>summary::after {
     position: absolute;
     content: "-";
     right: 20px;
 }
 
-details > summary::-webkit-details-marker {
+details>summary::-webkit-details-marker {
     display: none;
 }
-// #endregion
-</style>
+
+// #endregion</style>

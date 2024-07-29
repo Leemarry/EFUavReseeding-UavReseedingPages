@@ -27,7 +27,7 @@
                         </el-image>
                         <!-- <dv-decoration-8 :reverse="true" style="width:100%;height:40px;" /> -->
                         <div style="height:50%;text-align:right;" @mouseover="isHeaderMouse = true" @mouseout="isHeaderMouse = false">
-                            <router-link to="/sysmanage" style="color:#3de7c9;margin-right:15px;font-size:12px"><i class="el-icon-s-home" />
+                            <router-link to="/uavsmanage" style="color:#3de7c9;margin-right:15px;font-size:12px"><i class="el-icon-s-home" />
                                 进入平台</router-link>
                             <el-button type="text" @click="logout" style="color:#3de7c9;font-size:12px;margin-right:15px;"><i class="el-icon-switch-button"></i>
                                 退出系统</el-button>
@@ -86,13 +86,6 @@
                         </dv-border-box-7>
                         <div class="main_right_parms_title" @click="createWebWorker()">航线任务</div>
                         <dv-border-box-7 class="main_left_exception">
-                            <!-- tasksRoutes -->
-                            <!-- <div class="routes">
-                        <div class="route_item"  v-for="(item,index) in tasksRoutes" :key="index">
-                                <span>{{time(item.kmzUpdateTime)}}</span>
-                                <span>{{item.kmzName}}</span>
-                            </div>
-                     </div> -->
                             <div class="main_left_routes_body">
                                 <div class="statistics-top-box">
                                     <el-row>
@@ -107,10 +100,10 @@
                                         </el-col>
 
                                         <el-col :span="9">
-                                            <!-- <el-button disabled></el-button> -->
                                             <i style="margin:0px 5px; float: right;" title="上传无人机" class="iconfont icon-icon_update cursorStyle" :class="{ disabled: maploading }" @click="maploading ? null : uploadKmzBefore()"></i>
-
                                             <i style="margin:0px 5px; float: right;" title="解析航线" class="iconfont  icon-hangxianxinxi cursorStyle" :class="{ disabled: maploading }" @click="maploading ? null :readerKml()"></i>
+                                            <!-- <i style="margin:0px 5px; float: right; cursor: pointer;"  class='el-icon-message-solid' ></i> -->
+                                            <i style="margin:0px 5px; float: right;  cursor: pointer;"  class='el-icon-upload'  :class="{ disabled: maploading }"  @click='maploading ? null : openFileDialog()'></i>
                                         </el-col>
 
                                     </el-row>
@@ -136,62 +129,10 @@
                         <!-- <button v-copy="copyText">复制</button> -->
                         <dv-border-box-7 class="main_left_total">
                             <VideoModule ref="VideoModule" id="VideoModule" @send:switchMapOrVideo="switchMapOrVideo" :defaultUavInfo="defaultUavInfo"></VideoModule>
-                            <!-- <CesiumMap ref="CesiumMap" :visible="CesiumDrawVisible" :tasksRoutes="tasksRoutes" :defaultUavSn="defaultUavSn" @senddoFlyCommands='senddoFlyCommandsEvent'></CesiumMap> -->
-
-                            <!-- <div class="statistics">
-                                <!== 统计上盒子 ==>
-                                <div class="statistics-top-box">
-                                    <el-row>
-                                        <el-col :span="3">
-                                            <div :class="{ active: isActive == '1' }" @click="SelectTime(1)">总</div>
-                                        </el-col>
-                                        <el-col :span="4">
-                                            <div :class="{ active: isActive == '2' }" @click="SelectTime(2)">本周</div>
-                                        </el-col>
-                                        <el-col :span="16">
-                                            <div :class="{ active: isActive == '3' }" @click="SelectTime(3)">本月</div>
-                                        </el-col>
-                                    </el-row>
-                                </div>
-                                <!== 统计下盒子 ==>
-                                <div class="statistics-bottom-box" v-loading="statisticsloading" element-loading-text="拼命加载中" element-loading-background="rgba(21, 21,21, 1)">
-                                    <div>
-                                        <div class="post" id="EChartPie" style="width: 120px; height: 120px;"></div>
-                                    </div>
-                                    <div class="scroll-box" style="width:100%">
-
-                                        <div v-for="(item, index) in this.barChartInfo" :key="index" style="font-size:13px;width: 100%;height:40px;display:flex;flex-direction: column;justify-content: center;padding-right: 10px;">
-                                            <div class="ranking-info">
-                                                <div>{{ item.key }}</div>
-                                                <div class="itemright">{{ item.value }}</div>
-                                            </div>
-                                            <div class="ranking-column">
-                                                <div class="inside-column"></div>
-                                            </div>
-                                        </div>
-                                        <!== <dv-scroll-ranking-board :config="configss" style="width:210px;height:120px;padding-right: 10px;" /> ==>
-                                    </div>
-                                </div>
-                            </div> -->
                         </dv-border-box-7>
                     </div>
                     <!-- rgba(0, 0, 0, ${this.newOpacity}) -->
                     <div v-loading="maploading" element-loading-spinner="el-icon-loading" :element-loading-text=loadingText :element-loading-background="this.loadingBackground" ref="mainMiddle" class="mainMiddle height-calc zindex include_cesium_blocks" :style="{ height: divHeight + 'px' }">
-                        <!-- <pvmap ref="videoViews" @send="acpectsend" :divHeight="divHeight" :uavSn="defaultUavSn" :selectSn="selectSn" :uavs="uavs" :mapUrl="mapUrl" style="width:100%; height:100%">
-                        </pvmap>  -->
-                        <!-- 组件 videoViews -->
-                        <!-- <op></op> -->
-                        <!-- <div v-show="true" class="ToLockTheViewport">
-                            <div class="margin-b">
-                                <div class="paddbut">
-                                    <i :class="this.whetherToLockTheViewport?'el-icon-lock':'el-icon-unlock'" style="margin-right:6px"></i>
-                                    <!== <img src="../../assets/images/startRoute.png" alt="" style="margin-right:6px"> ==>
-                                    <span>{{this.whetherToLockTheViewport ? '已锁定' :'锁定视口' }}</span>
-                                </div>
-                            </div>
-                        </div> --> 
-                        <!-- ref="CesiumMap"  -->
-                        <!--    <VideoModule ref="VideoModule" @send:switchMapOrVideo="switchMapOrVideo" :defaultUavInfo="defaultUavInfo"></VideoModule> -->
                         <CesiumMap ref="CesiumMap" :visible="CesiumDrawVisible" :maploading="maploading" :tasksRoutes="tasksRoutes" :tasksName="tasksName" :defaultUavSn="defaultUavSn" @senddoFlyCommands='senddoFlyCommandsEvent'></CesiumMap>
                         <div class="drawButton" v-show="isMap">
                             <i class="el-icon-edit clickstyle" :title="'绘制'" @click="CesiumDrawVisible=!CesiumDrawVisible"></i>
@@ -210,27 +151,13 @@
                                 <el-popconfirm confirm-button-text='确定' cancel-button-text='取消' icon="el-icon-info" icon-color="red" @confirm="rtl(1102)" title="确认返航？">
                                     <el-button slot="reference" title="返航-1102" icon="el-icon-location-information" circle size="mini" class="custom-button"></el-button>
                                 </el-popconfirm>
-
                                 <el-button title="执行任务" icon="el-icon-wind-power" circle size="mini" class="custom-button" @click="startMission(1006)"></el-button>
                                 <!-- 悬停1104  -->
                                 <el-button title="暂停-1142" icon="el-icon-alarm-clock" circle size="mini" class="custom-button" @click="pauseMission(1142)"></el-button>
                                 <el-button title="停止=1144" icon="el-icon-timer" circle size="mini" class="custom-button" @click="stopMission(1144)"></el-button>
                                 <el-button title="恢复-1143" icon="el-icon-time" circle size="mini" class="custom-button" @click="resumeMission(1143)"></el-button>
                             </div>
-
-                            <!-- <div class="commonly_used-icon">
-                                <el-button title="起飞" icon="el-icon-s-promotion" circle size="mini"></el-button>
-                                <el-button title="降落" icon="el-icon-place" circle size="mini"></el-button>
-                                <el-button  icon="el-icon-caret-top" circle size="mini" class="top-icon"></el-button>
-                            </div>
-                            <div class="not_commonly_used-icon">
-                                <el-button title="返航" icon="el-icon-location-information" circle size="mini"></el-button>
-                                <el-button title="暂停" icon="el-icon-wind-power" circle size="mini"></el-button>
-                                <el-button title="停止--悬停" icon="el-icon-timer" circle size="mini"></el-button>
-                                <el-button title="恢复" icon="el-icon-time" circle size="mini"></el-button>
-                            </div> -->
                         </div>
-
                     </div>
                     <div class="mainRight" v-if="this.createARouteOrNot">
                         <dv-border-box-7 class="main_right_hud">
@@ -302,6 +229,25 @@
                 <el-button size="mini" type="primary" @click="handleSumitClick">确 定</el-button>
             </div>
         </el-dialog>
+        <div id="fileDialog" class="block" @click="closeFileDialog">
+            <div class="content" id="div1">
+                <div id="close">
+                    <span id="close-button"></span>
+                    <div></div>
+                </div>
+                <div id="div2">
+                    <el-upload class="upload-demo" ref="upload" action="/" :on-preview="handlePreview" size="mini" :before-remove="beforeRemove" :on-remove="handleRemove" :file-list="fileList"
+                        :auto-upload="false" :on-change="changeFile">
+                        <el-button slot="trigger" size="mini" type="primary">点击上传</el-button>
+                        <div slot="tip" class="el-upload__tip">只能上传Kmz文件，且不超过5M</div>
+                    </el-upload>
+                </div>
+                <div id="footer">
+                    <el-button size="mini" @click="fileSubmit" :disabled="!(fileList && fileList.length > 0)" :loading="maploading">{{ '上传' }}</el-button>
+                    <el-button size="mini" @click="canlceHandle">取消</el-button>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 

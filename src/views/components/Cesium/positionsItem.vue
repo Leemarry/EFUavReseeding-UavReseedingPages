@@ -1,4 +1,10 @@
 <!--
+ * @Date: 2024-07-03 17:06:23
+ * @LastEditors: likai 2806699104@qq.com
+ * @FilePath: \UavReseedingPages\src\views\components\Cesium\positionsItem.vue
+ * @Description: Do not edit
+-->
+<!--
  * @Descripttion: 
  * @version: 
  * @Author: Eugene

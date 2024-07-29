@@ -1002,3 +1002,38 @@ canvas {
   color: rgb(97, 97, 95);
   font-size: 14px;
 }
+
+
+
+// #region
+#fileDialog{
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1999;
+  .content{
+    background: #eeeeee;
+    width: 20%;
+    z-index: 1;
+    margin: 12% auto;
+    overflow: auto;
+    border-radius: 5px;
+
+    .formchild{
+
+    }
+    #footer{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 45px;
+  
+    }
+  }
+
+}
+// #endregion 

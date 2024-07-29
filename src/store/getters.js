@@ -1,4 +1,10 @@
 /*
+ * @Date: 2023-11-13 10:49:39
+ * @LastEditors: likai 2806699104@qq.com
+ * @FilePath: \UavReseedingPages\src\store\getters.js
+ * @Description: Do not edit
+ */
+/*
  * @Descripttion: 
  * @version: 
  * @Author: Eugene

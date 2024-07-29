@@ -4,7 +4,7 @@
  * @Author: Eugene
  * @Date: 2023-11-21 11:42:00
  * @LastEditors: likai 2806699104@qq.com
- * @LastEditTime: 2024-07-05 16:37:45
+ * @LastEditTime: 2024-07-24 09:29:31
 -->
 <!-- 控制台 -->
 <template>
@@ -139,17 +139,17 @@
             </div>
             <div class="a-GRWJO-2">
                 <div class="item-Bot">
-                    <el-button :disabled='uavControlBtn.disabled' :title="uavControlBtn.disabledtitle !=null ? uavControlBtn.disabledtitle : '播种'" class="blackCircleButton" @click="startWork()">F5：投种</el-button>
+                    <el-button :disabled='uavControlBtn.disabled' :title="uavControlBtn.disabledtitle !=null ? uavControlBtn.disabledtitle : '播种'" class="blackCircleButton" @click="startWork()">确认投种</el-button>
 
                 </div>
 
             </div>
             <div class="a-Br9AJ-0">
-                <div style="height:10px; display: flex; "   >
-                   经度：<input type="number" v-model="lng" style="width: 18%;height: 20px;">
-                   纬度：<input type="number" v-model="lat" style="width: 18%;height: 20px;">
-                   高度：<input type="number" v-model="alt" style="width: 18%;height: 20px;">
-                   <el-button type='samll' @click='flyToHere'>指点</el-button>
+                <div style="height:30px; display: flex; align-items: center;"   >
+                   经度：<input type="number" v-model="lng" style="width: 22%;height: 25px;">
+                   纬度：<input type="number" v-model="lat" style="width: 22%;height: 25px;">
+                   高度：<input type="number" v-model="alt" style="width: 8%;height: 25px;">
+                   <el-button type='samll'  @click='flyToHere'>指点</el-button>
                    <el-button type='samll' @click='clearInfo'>清空</el-button>
                 </div>
             </div>
@@ -270,7 +270,7 @@ export default {
             // this.$emit("sendstartwork");
             this.sendthrowObject()
         },
-        /**f5投放 sendthrowObject */
+        /**f5投放  */
         sendthrowObject() {
             this.$emit("sendthrowObject")
         },

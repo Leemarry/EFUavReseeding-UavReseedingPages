@@ -567,12 +567,23 @@ class GraphicManager {
     for (var i = 0; i < len; i++) {
       var tmp = null;
       if (!bool) {
-        tmp = new Cesium.Rectangle(
-          rectangle.west + step * (i + 1),
-          rectangle.south,
-          rectangle.west + step * i,
-          rectangle.north
-        );
+        // 东西  //west , south , east , north
+        if(place.includes('east')){
+          tmp = new Cesium.Rectangle(
+            rectangle.east - step * (i + 1),
+            rectangle.south,
+            rectangle.east - step * i,
+            rectangle.north
+          );
+        }else{
+          tmp = new Cesium.Rectangle(
+            rectangle.west + step * (i + 1),
+            rectangle.south,
+            rectangle.west + step * i,
+            rectangle.north
+          );
+        }
+      
       } else {
         tmp = new Cesium.Rectangle(
           rectangle.west,

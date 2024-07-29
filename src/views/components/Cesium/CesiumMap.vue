@@ -128,16 +128,16 @@ export default {
         MapProvider(newVal, oldVal) {
             this.addimageryLayers(newVal);
         },
-        geoCoordinates: {
-            handler(newVal, oldVal) {
-                if (!newVal) {
-                    console.log("geosCoordinates is null");
-                } else {
-                    console.log("geosCoordinates:", newVal);
-                }
-            },
-            immediate: true // 立即执行一次
-        }
+        // geoCoordinates: {
+        //     handler(newVal, oldVal) {
+        //         if (!newVal) {
+        //             console.log("geosCoordinates is null");
+        //         } else {
+        //             console.log("geosCoordinates:", newVal);
+        //         }
+        //     },
+        //     immediate: true // 立即执行一次
+        // }
     },
     //方法集合
     methods: {
@@ -623,7 +623,10 @@ export default {
             if (this.geoCoordinates.length > 0) {
                 console.log("规划中心点");
                 this.updateMapCenter(this.geoCoordinates[0][0], this.geoCoordinates[0][1], 600.05766199658808, 0, -45);
-                this.drawLines()
+                const startColor = new Cesium.Color.fromCssColorString('#009DFF')// #9EE8E7
+                const endColor = Cesium.Color.RED.withAlpha(0.8)
+                const lineColor = Cesium.Color.YELLOW// #9EE8E7
+                this.drawLines(this.geoCoordinates, startColor, endColor, lineColor)
             } else if (this.defaultUavHeartbeat && this.defaultUavHeartbeat.lng !== 0 && this.defaultUavHeartbeat.lng !== 0) {
                 console.log("无人机中心点");
                 let longitude = this.defaultUavHeartbeat.lng
@@ -654,11 +657,12 @@ export default {
          * @param {*} PositionsList 经度纬度数组
          * @return {*}
          */
-        async drawLines(PositionsList = this.geoCoordinates) {
-            const startColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3) // #9EE8E7
-            const endColor = new Cesium.Color.fromCssColorString('#9EE8E7').withAlpha(0.3)
+        async drawLines(PositionsList = this.geoCoordinates,
+            startColor = new Cesium.Color.fromCssColorString('#009DFF').withAlpha(0.3),
+            endColor = new Cesium.Color.fromCssColorString('#9EE8E7').withAlpha(0.3),
+            lineColor = new Cesium.Color.fromCssColorString('#E6E6E6').withAlpha(0.3)) {
             const color = Cesium.Color.BLUE
-            const lineColor = new Cesium.Color.fromCssColorString('#E6E6E6').withAlpha(0.3) // #9EE8E7
+
             let viewer = window.viewer;
             if (PositionsList.length > 0) {
                 // 设置默认相机视角
@@ -693,7 +697,7 @@ export default {
                     [position]
                 );
                 // console.log('高度高度',updatedPositions,Position,position);
-                height = updatedPositions[0].height + 10;
+                height = 10; //updatedPositions[0].height + 
                 var altitude = height; // 指定航点的高度
                 var newPosition = Cesium.Cartesian3.fromDegrees(
                     longitude,
@@ -733,18 +737,8 @@ export default {
                     granularity: 0.03
                 }
             });
-
-            // 将航线实体添加到 map 中
-            entityMap.set(redLine.id, redLine);
-
-            // 5 秒后修改第一个点的颜色为红色
-            // setTimeout(() => {
-            //     var firstPoint = viewer.entities.getById("storePoint0");
-            //     if (firstPoint) {
-            //         firstPoint.point.color = Cesium.Color.RED;
-            //     }
-            // }, 5000);
-
+            console.log('绘制上传的航线',);
+            
             viewer.scene.requestRender();
         },
         async drawPoints(PositionsList = this.geoCoordinates) {
@@ -835,8 +829,7 @@ export default {
                     (entities[i].id.indexOf("storePoint") !== -1 ||
                         entities[i].id.startsWith("storePoint"))
                 ) {
-                    console.log(' entities[i]', entities[i].id); // id : storePoint_0
-                    entities[i].point.color =endColor;
+                    entities[i].point.color = endColor;
                 }
             }
             for (let index = 0; index < indexArr.length; index++) {
@@ -844,10 +837,10 @@ export default {
                 var radar = viewer.entities.getById(PointId);
                 if (radar !== undefined) {
                     var position = radar.position.getValue(Cesium.JulianDate.now());
-                    if(index === 0){
+                    if (index === 0) {
                         radar.point.color = startColor;
-                    }else{
-                    radar.point.color = Cesium.Color.RED;
+                    } else {
+                        radar.point.color = Cesium.Color.RED;
                     }
                     waypoints.push(position);
                 }
